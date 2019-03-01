@@ -21,19 +21,6 @@ export const getRamdomStringOfArray = (count, arrArg) => {
   return arrOut.join(` `);
 };
 
-const addZero = (arg) =>
-  arg < 10 ? `0${arg.toString()}` : arg.toString();
-
-export const getDateString = (date) => {
-  const dateObj = new Date(date);
-  return `${addZero(dateObj.getDate())}.${addZero(dateObj.getMonth())}.${dateObj.getFullYear()}`;
-};
-
-export const getTimeString = (date) => {
-  const dateObj = new Date(date);
-  return `${addZero(dateObj.getHours())}:${addZero(dateObj.getMinutes())}`;
-};
-
 export const getDataFromObj = (count, getObj) => {
   const arr = [];
   for (let i = 0; i < count; i++) {
