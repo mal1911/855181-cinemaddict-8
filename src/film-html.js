@@ -5,14 +5,7 @@ const getControlsHTML = () =>
       <button class="film-card__controls-item button film-card__controls-item--favorite"><!--Mark as favorite-->FAV</button>
     </form>`;
 
-const isControls = (param) => {
-  if (param !== null) {
-    if (param.isControls) {
-      return true;
-    }
-  }
-  return false;
-};
+const isControls = (param) => param && param.isControls;
 
 export default (objArg, param = null) =>
   `<article class="film-card ${isControls(param) ? `` : `film-card--no-controls`}">
