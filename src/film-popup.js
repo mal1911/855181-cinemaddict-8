@@ -3,9 +3,7 @@ import {
 } from "./utils";
 
 export default class {
-
   constructor(data) {
-
     this._title = data.title;
     this._poster = data.poster;
     this._description = data.description;
@@ -15,11 +13,9 @@ export default class {
     this._comments = data.comments;
     this._rating = data.rating;
     this._element = null;
-
     this._state = {
       // Состояние компонента
     };
-
     this._onClose = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
   }
@@ -35,7 +31,6 @@ export default class {
   set onClose(fn) {
     this._onClose = fn;
   }
-
 
   get template() {
     return `<section class="film-details">

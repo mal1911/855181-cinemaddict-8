@@ -5,10 +5,8 @@ import Film from './film';
 import FilmPopup from './film-popup';
 import {removeChildElements} from "./utils";
 
-
 const renderFilms = (data, parentElement, param) => {
   const bodyElement = document.querySelector(`body`);
-
 
   const onComments = (filmPopupComponent) => {
     filmPopupComponent.render();
@@ -20,10 +18,8 @@ const renderFilms = (data, parentElement, param) => {
     filmPopupComponent.unrender();
   };
 
-
   const fragment = document.createDocumentFragment();
   removeChildElements(parentElement);
-
   data.forEach((obj) => {
     const filmComponent = new Film(obj, param);
     const filmPopupComponent = new FilmPopup(obj);
@@ -32,9 +28,7 @@ const renderFilms = (data, parentElement, param) => {
     fragment.appendChild(filmComponent.render());
   });
   parentElement.appendChild(fragment);
-
 };
-
 
 const main = () => {
   const MAX_FILMS = 7;
@@ -50,15 +44,14 @@ const main = () => {
   const filmListElement = document.querySelector(`.films-list .films-list__container`);
   renderFilms(filmsData, filmListElement, {isControls: true});
 
-
   const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
   renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
   renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
 
   const onFilterElementClick = () => {
     renderFilms(getRandomArray(filmsData, getRandomInt(1, MAX_FILMS)), filmListElement, {isControls: true});
-
   };
+
   mainNavigationElement.addEventListener(`click`, onFilterElementClick);
 };
 

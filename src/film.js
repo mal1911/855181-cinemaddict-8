@@ -3,9 +3,7 @@ import {
 } from "./utils";
 
 export default class {
-
   constructor(data, param) {
-
     this._title = data.title;
     this._poster = data.poster;
     this._description = data.description;
@@ -14,16 +12,11 @@ export default class {
     this._genre = data.genre;
     this._comments = data.comments;
     this._rating = data.rating;
-
     this._param = param;
-
-
     this._element = null;
-
     this._state = {
       // Состояние компонента
     };
-
     this._onComments = null;
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
   }
@@ -88,5 +81,4 @@ export default class {
     this.unbind();
     this._element = null;
   }
-
 }
