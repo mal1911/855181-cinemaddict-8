@@ -32,3 +32,12 @@ export const getDataFromObj = (count, getObj) => {
 export const getHTMLFromData = (arrArg, getElementHTML, param = null) =>
   arrArg.map((obj) => getElementHTML(obj, param)).join(``);
 
+export const removeChildElements = (parentElement) => {
+  parentElement.innerHTML = ``;
+};
+
+export const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+  return newElement.firstChild;
+};
