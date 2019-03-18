@@ -1,9 +1,8 @@
-import {
-  createElement,
-} from "./utils";
+import Component from './component';
 
-export default class {
+export default class extends Component {
   constructor(data) {
+    super();
     this._title = data.title;
     this._poster = data.poster;
     this._description = data.description;
@@ -12,20 +11,12 @@ export default class {
     this._genre = data.genre;
     this._comments = data.comments;
     this._rating = data.rating;
-    this._element = null;
-    this._state = {
-      // Состояние компонента
-    };
     this._onClose = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
   }
 
   _onCloseButtonClick() {
     return typeof this._onClose === `function` && this._onClose();
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onClose(fn) {
@@ -205,19 +196,8 @@ export default class {
       .addEventListener(`click`, this._onCloseButtonClick);
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
   unbind() {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseButtonClick);
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
