@@ -1,9 +1,8 @@
-import {
-  createElement,
-} from "./utils";
+import Component from './component';
 
-export default class {
+export default class extends Component {
   constructor(data, param) {
+    super();
     this._title = data.title;
     this._poster = data.poster;
     this._description = data.description;
@@ -13,20 +12,12 @@ export default class {
     this._comments = data.comments;
     this._rating = data.rating;
     this._param = param;
-    this._element = null;
-    this._state = {
-      // Состояние компонента
-    };
     this._onComments = null;
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
   }
 
   _onCommentsButtonClick() {
     return typeof this._onComments === `function` && this._onComments();
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onComments(fn) {
@@ -66,19 +57,8 @@ export default class {
       .addEventListener(`click`, this._onCommentsButtonClick);
   }
 
-  render() {
-    this._element = createElement(this.template);
-    this.bind();
-    return this._element;
-  }
-
   unbind() {
     this._element.querySelector(`.film-card__comments`)
       .removeEventListener(`click`, this._onCommentsButtonClick);
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
