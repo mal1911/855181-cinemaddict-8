@@ -1,6 +1,6 @@
 import Component from './component';
 
-export default class extends Component {
+export default class FilmPopup extends Component {
   constructor(data) {
     super();
     this._title = data.title;
@@ -13,7 +13,59 @@ export default class extends Component {
     this._rating = data.rating;
     this._onClose = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
+    this._onAddComments = this._onAddComments.bind(this);
+    this._onAddUserRating = this._onAddUserRating.bind(this);
   }
+
+  _processForm(formData) {
+    const entry = {
+      title: ``,
+      poster: ``,
+      description: ``,
+      year: ``,
+      duration: ``,
+      genre: [],
+      comments: [],
+      rating: ``,
+    };
+
+    const filmEditMapper = FilmPopup.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (filmEditMapper[property]) {
+        filmEditMapper[property](value);
+      }
+    }
+    /*if (this._dueStartDate && this._dueStartTime) {
+      entry.dueDate = moment(this._dueStartDate + this._dueStartTime).utc(false);
+    } else {
+      entry.dueDate = this._dueDate;
+    }*/
+    return entry;
+  }
+
+  static createMapper(target) {
+    return {
+      /*      title: (value) => {
+              target.title = value;
+              return target.title;
+            },
+            poster: (value) => {
+              target.poster = value;
+              return target.poster;
+            },*/
+
+      comment: (value) => target.comments.push(value),
+
+      /*rating: (value) => {
+        target.repeatingDays[value] = true;
+        return target.repeatingDays[value];
+      },*/
+
+    };
+  }
+
 
   _onCloseButtonClick() {
     return typeof this._onClose === `function` && this._onClose();
@@ -22,6 +74,17 @@ export default class extends Component {
   set onClose(fn) {
     this._onClose = fn;
   }
+
+  _onAddComments(evt) {
+    if (evt.ctrlKey && evt.keyCode === 13) {
+      console.log(`addComments`);
+    }
+  }
+
+  _onAddUserRating() {
+    console.log(`addUserRating`);
+  }
+
 
   get template() {
     return `<section class="film-details">
@@ -194,10 +257,25 @@ export default class extends Component {
   bind() {
     this._element.querySelector(`.film-details__close-btn`)
       .addEventListener(`click`, this._onCloseButtonClick);
+    this._element.querySelector(`.film-details__comment-input`)
+      .addEventListener(`keydown`, this._onAddComments);
   }
 
   unbind() {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseButtonClick);
+    this._element.querySelector(`.film-details__comment-input`)
+      .removeEventListener(`keydown`, this._onAddComments);
+  }
+
+  update(data) {
+    this._title = data.title;
+    this._poster = data.poster;
+    this._description = data.description;
+    this._year = data.year;
+    this._duration = data.duration;
+    this._genre = data.genre;
+    this._comments = data.comments;
+    this._rating = data.rating;
   }
 }

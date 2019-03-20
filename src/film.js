@@ -61,4 +61,15 @@ export default class extends Component {
     this._element.querySelector(`.film-card__comments`)
       .removeEventListener(`click`, this._onCommentsButtonClick);
   }
+
+  update(data) {
+    this._title = data.title;
+    this._poster = data.poster;
+    this._description = data.description;
+    this._year = data.year;
+    this._duration = data.duration;
+    this._genre = data.genre;
+    this._comments = data.comments;
+    this._rating = data.rating;
+  }
 }
