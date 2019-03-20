@@ -15,6 +15,7 @@ export default class FilmPopup extends Component {
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
     this._onAddComments = this._onAddComments.bind(this);
     this._onAddUserRating = this._onAddUserRating.bind(this);
+    this._onEmojiClick = this._onEmojiClick.bind(this);
   }
 
   _processForm(formData) {
@@ -85,6 +86,11 @@ export default class FilmPopup extends Component {
     console.log(`addUserRating`);
   }
 
+  _onEmojiClick(evt) {
+    if (evt.target.tagName === `LABEL`) {
+      this._element.querySelector(`.film-details__add-emoji-label`).innerText = evt.target.innerText;
+    }
+  }
 
   get template() {
     return `<section class="film-details">
@@ -257,6 +263,10 @@ export default class FilmPopup extends Component {
   bind() {
     this._element.querySelector(`.film-details__close-btn`)
       .addEventListener(`click`, this._onCloseButtonClick);
+
+    this._element.querySelector(`.film-details__emoji-list`)
+      .addEventListener(`click`, this._onEmojiClick);
+
     this._element.querySelector(`.film-details__comment-input`)
       .addEventListener(`keydown`, this._onAddComments);
   }
@@ -264,6 +274,10 @@ export default class FilmPopup extends Component {
   unbind() {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseButtonClick);
+
+    this._element.querySelector(`.film-details__emoji-list`)
+      .removeEventListener(`click`, this._onEmojiClick);
+
     this._element.querySelector(`.film-details__comment-input`)
       .removeEventListener(`keydown`, this._onAddComments);
   }
