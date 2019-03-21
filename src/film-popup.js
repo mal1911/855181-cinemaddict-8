@@ -1,4 +1,7 @@
+import {getHTMLFromData} from './utils';
 import Component from './component';
+
+const ENTER_KEY = 13;
 
 export default class FilmPopup extends Component {
   constructor(data) {
@@ -38,11 +41,6 @@ export default class FilmPopup extends Component {
         filmEditMapper[property](value);
       }
     }
-    /*if (this._dueStartDate && this._dueStartTime) {
-      entry.dueDate = moment(this._dueStartDate + this._dueStartTime).utc(false);
-    } else {
-      entry.dueDate = this._dueDate;
-    }*/
     return entry;
   }
 
@@ -77,8 +75,19 @@ export default class FilmPopup extends Component {
   }
 
   _onAddComments(evt) {
-    if (evt.ctrlKey && evt.keyCode === 13) {
-      console.log(`addComments`);
+    if (evt.ctrlKey && evt.keyCode === ENTER_KEY) {
+      const element = evt.target;
+      const emoji = this._element.querySelector(`.film-details__add-emoji-label`).innerText;
+      const text = element.value;
+      if (text) {
+        this._comments.push({
+          emoji,
+          text,
+          author: ``,
+          date: new Date(),
+        });
+        this._refreshComments();
+      }
     }
   }
 
@@ -90,6 +99,28 @@ export default class FilmPopup extends Component {
     if (evt.target.tagName === `LABEL`) {
       this._element.querySelector(`.film-details__add-emoji-label`).innerText = evt.target.innerText;
     }
+  }
+
+  _getCommentHTML(comment) {
+    return `<li class="film-details__comment">
+              <span class="film-details__comment-emoji">${comment.emoji}</span>
+                <div>
+                  <p class="film-details__comment-text">${comment.text}</p>
+                  <p class="film-details__comment-info">
+                    <span class="film-details__comment-author">${comment.author}</span>
+                    <span class="film-details__comment-day">3 days ago</span>
+                  </p>
+                </div>
+             </li>`;
+  }
+
+  _getCommentsHTML() {
+    return getHTMLFromData(Array.from(this._comments), this._getCommentHTML);
+  }
+
+  _refreshComments() {
+    const parentElement = this._element.querySelector(`film-details__comments-list`);
+    parentElement.innerHTML = this._getCommentsHTML();
   }
 
   get template() {
@@ -173,16 +204,7 @@ export default class FilmPopup extends Component {
                   <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">1</span></h3>
             
                   <ul class="film-details__comments-list">
-                    <li class="film-details__comment">
-                      <span class="film-details__comment-emoji">😴</span>
-                      <div>
-                        <p class="film-details__comment-text">So long-long story, boring!</p>
-                        <p class="film-details__comment-info">
-                          <span class="film-details__comment-author">Tim Macoveev</span>
-                          <span class="film-details__comment-day">3 days ago</span>
-                        </p>
-                      </div>
-                    </li>
+                    ${this._getCommentsHTML}
                   </ul>
             
                   <div class="film-details__new-comment">
@@ -256,9 +278,19 @@ export default class FilmPopup extends Component {
                   </div>
                 </section>
               </form>
-            </section>
-            `;
+            </section>`;
   }
+
+  refresh() {
+    this.unbind();
+    this._partialUpdate();
+    this.bind();
+  }
+
+  _partialUpdate() {
+    this._element.innerHTML = this.template;
+  }
+
 
   bind() {
     this._element.querySelector(`.film-details__close-btn`)

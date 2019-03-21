@@ -8,23 +8,32 @@ import {removeChildElements} from "./utils";
 const renderFilms = (data, parentElement, param) => {
   const bodyElement = document.querySelector(`body`);
 
-  const onComments = (filmPopupComponent) => {
-    filmPopupComponent.render();
-    bodyElement.insertAdjacentElement(`beforeend`, filmPopupComponent.element);
-  };
-
-  const onClose = (filmPopupComponent) => {
-    bodyElement.removeChild(filmPopupComponent.element);
-    filmPopupComponent.unrender();
-  };
-
   const fragment = document.createDocumentFragment();
   removeChildElements(parentElement);
-  data.forEach((obj) => {
-    const filmComponent = new Film(obj, param);
-    const filmPopupComponent = new FilmPopup(obj);
-    filmComponent.onComments = onComments.bind(null, filmPopupComponent);
-    filmPopupComponent.onClose = onClose.bind(null, filmPopupComponent);
+  data.forEach((film) => {
+    const filmComponent = new Film(film, param);
+    const filmPopupComponent = new FilmPopup(film);
+
+    filmComponent._onComments = () => {
+      filmPopupComponent.render();
+      bodyElement.insertAdjacentElement(`beforeend`, filmPopupComponent.element);
+    };
+
+    filmPopupComponent.onClose = (newObject) => {
+      film.title = newObject.title;
+      film.poster = newObject.poster;
+      film.description = newObject.description;
+      film.year = newObject.year;
+      film.duration = newObject.duration;
+      film.genre = newObject.genre;
+      film.comments = newObject.comments;
+      film.rating = newObject.rating;
+
+      filmComponent.update(film);
+      filmComponent.render();
+      bodyElement.removeChild(filmPopupComponent.element);
+      filmPopupComponent.unrender();
+    };
     fragment.appendChild(filmComponent.render());
   });
   parentElement.appendChild(fragment);

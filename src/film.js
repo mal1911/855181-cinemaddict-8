@@ -47,7 +47,7 @@ export default class extends Component {
       </p>
       <img src="./images/posters/${this._poster}" alt="" class="film-card__poster">
       <p class="film-card__description">${this._description}</p>
-     <button class="film-card__comments">${this._comments} comments</button>
+     <button class="film-card__comments">${this._comments.length} comments</button>
       ${this._isControls() ? this._getControlsHTML() : ``}
     </article>`;
   }

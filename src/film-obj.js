@@ -31,6 +31,21 @@ const genresArr = [
   `Fantasy`,
 ];
 
+const commentsArr = [
+  {
+    emoji: `😀`,
+    text: `So long-long story, boring!`,
+    author: `Tim Macoveev`,
+    date: new Date(),
+  },
+  {
+    emoji: `😀`,
+    text: `So long-long story, boring!`,
+    author: `Tim Macoveev`,
+    date: new Date(),
+  },
+];
+
 export default () => (
   {
     title: getRamdomStringOfArray(3, titlesArr),
@@ -39,7 +54,7 @@ export default () => (
     year: getRandomInt(1950, 2019),
     duration: `${getRandomInt(1, 2)}h ${getRandomInt(1, 59)}m`,
     genre: getRandomElementOfArray(genresArr),
-    comments: getRandomInt(0, 100),
+    comments: commentsArr,
     rating: getRandomInt(0, 1000) / 100,
   }
 );
