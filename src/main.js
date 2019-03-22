@@ -26,11 +26,12 @@ const renderFilms = (data, parentElement, param) => {
       film.year = newObject.year;
       film.duration = newObject.duration;
       film.genre = newObject.genre;
-      film.comments = newObject.comments;
       film.rating = newObject.rating;
+      film.comments = newObject.comments;
+      film.userRating = newObject.userRating;
 
       filmComponent.update(film);
-      filmComponent.render();
+      filmComponent.refresh();
       bodyElement.removeChild(filmPopupComponent.element);
       filmPopupComponent.unrender();
     };

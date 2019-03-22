@@ -1,5 +1,6 @@
 import {getHTMLFromData} from './utils';
 import Component from './component';
+import moment from 'moment';
 
 const ENTER_KEY = 13;
 
@@ -14,16 +15,20 @@ export default class FilmPopup extends Component {
     this._genre = data.genre;
     this._comments = data.comments;
     this._rating = data.rating;
+    this._userRating = data.userRating;
+    this._releaseDate = data.releaseDate;
+    this._country = data.country;
+
     this._onClose = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
     this._onAddComments = this._onAddComments.bind(this);
-    this._onAddUserRating = this._onAddUserRating.bind(this);
+    this._onChangeUserRating = this._onChangeUserRating.bind(this);
     this._onEmojiClick = this._onEmojiClick.bind(this);
   }
 
   _processForm(formData) {
     const entry = {
-      title: ``,
+      title: `new title`,
       poster: ``,
       description: ``,
       year: ``,
@@ -41,33 +46,27 @@ export default class FilmPopup extends Component {
         filmEditMapper[property](value);
       }
     }
+    entry.comments = this._comments;
     return entry;
   }
 
   static createMapper(target) {
     return {
-      /*      title: (value) => {
-              target.title = value;
-              return target.title;
-            },
-            poster: (value) => {
-              target.poster = value;
-              return target.poster;
-            },*/
-
-      comment: (value) => target.comments.push(value),
-
-      /*rating: (value) => {
-        target.repeatingDays[value] = true;
-        return target.repeatingDays[value];
-      },*/
-
+      score: (value) => {
+        target.userRating = Number(value);
+        return target.userRating;
+      },
     };
   }
 
-
-  _onCloseButtonClick() {
-    return typeof this._onClose === `function` && this._onClose();
+  _onCloseButtonClick(evt) {
+    evt.preventDefault();
+    const formData = new FormData(this._element.querySelector(`.film-details__inner`));
+    const newData = this._processForm(formData);
+    if (typeof this._onClose === `function`) {
+      this._onClose(newData);
+    }
+    this.update(newData);
   }
 
   set onClose(fn) {
@@ -86,13 +85,16 @@ export default class FilmPopup extends Component {
           author: ``,
           date: new Date(),
         });
+        element.value = ``;
         this._refreshComments();
       }
     }
   }
 
-  _onAddUserRating() {
-    console.log(`addUserRating`);
+  _onChangeUserRating(evt) {
+    if (evt.target.tagName === `LABEL`) {
+      this._element.querySelector(`.film-details__user-rating`).innerText = `Your rate ${evt.target.innerText}`;
+    }
   }
 
   _onEmojiClick(evt) {
@@ -108,18 +110,20 @@ export default class FilmPopup extends Component {
                   <p class="film-details__comment-text">${comment.text}</p>
                   <p class="film-details__comment-info">
                     <span class="film-details__comment-author">${comment.author}</span>
-                    <span class="film-details__comment-day">3 days ago</span>
-                  </p>
-                </div>
-             </li>`;
+                    <span class="film-details__comment-day">${moment(comment.date).format(`DD.MM.YYYY`)}</span>
+                    </p>
+                  </div>
+               </li>`;
   }
 
   _getCommentsHTML() {
-    return getHTMLFromData(Array.from(this._comments), this._getCommentHTML);
+    return getHTMLFromData(this._comments, this._getCommentHTML);
   }
 
   _refreshComments() {
-    const parentElement = this._element.querySelector(`film-details__comments-list`);
+    let parentElement = this._element.querySelector(`.film-details__comments-count`);
+    parentElement.innerHTML = this._comments.length;
+    parentElement = this._element.querySelector(`.film-details__comments-list`);
     parentElement.innerHTML = this._getCommentsHTML();
   }
 
@@ -145,7 +149,7 @@ export default class FilmPopup extends Component {
             
                       <div class="film-details__rating">
                         <p class="film-details__total-rating">${this._rating}</p>
-                        <p class="film-details__user-rating">Your rate 8</p>
+                        <p class="film-details__user-rating">Your rate ${this._userRating}</p>
                       </div>
                     </div>
             
@@ -164,15 +168,15 @@ export default class FilmPopup extends Component {
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Release Date</td>
-                        <td class="film-details__cell">15 June 2018 (USA)</td>
+                        <td class="film-details__cell">${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Runtime</td>
-                        <td class="film-details__cell">118 min</td>
-                      </tr>
-                      <tr class="film-details__row">
-                        <td class="film-details__term">Country</td>
-                        <td class="film-details__cell">USA</td>
+                        <td class="film-details__cell">${moment().startOf(`day`).add(this._duration * 60 * 1000).format(`h:mm`)}</td>
+                        </tr>
+                        <tr class="film-details__row">
+                          <td class="film-details__term">Country</td>
+                          <td class="film-details__cell">${this._country}</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Genres</td>
@@ -201,10 +205,10 @@ export default class FilmPopup extends Component {
                 </section>
             
                 <section class="film-details__comments-wrap">
-                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">1</span></h3>
+                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
             
                   <ul class="film-details__comments-list">
-                    ${this._getCommentsHTML}
+                    ${this._getCommentsHTML()}
                   </ul>
             
                   <div class="film-details__new-comment">
@@ -246,51 +250,40 @@ export default class FilmPopup extends Component {
                       <p class="film-details__user-rating-feelings">How you feel it?</p>
             
                       <div class="film-details__user-rating-score">
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1">
-                        <label class="film-details__user-rating-label" for="rating-1">1</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2">
-                        <label class="film-details__user-rating-label" for="rating-2">2</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3">
-                        <label class="film-details__user-rating-label" for="rating-3">3</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4">
-                        <label class="film-details__user-rating-label" for="rating-4">4</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" checked>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1" ${this._userRating === 1 && ` checked`}>
+                          <label class="film-details__user-rating-label" for="rating-1">1</label>
+              
+                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userRating === 2 && ` checked`}>
+                            <label class="film-details__user-rating-label" for="rating-2">2</label>
+                
+                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userRating === 3 && ` checked`}>
+                              <label class="film-details__user-rating-label" for="rating-3">3</label>
+                  
+                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userRating === 4 && ` checked`}>
+                                <label class="film-details__user-rating-label" for="rating-4">4</label>
+                    
+                                <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userRating === 5 && ` checked`}>
                         <label class="film-details__user-rating-label" for="rating-5">5</label>
             
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6">
-                        <label class="film-details__user-rating-label" for="rating-6">6</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7">
-                        <label class="film-details__user-rating-label" for="rating-7">7</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8">
-                        <label class="film-details__user-rating-label" for="rating-8">8</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9">
-                        <label class="film-details__user-rating-label" for="rating-9">9</label>
-            
-                      </div>
-                    </section>
-                  </div>
-                </section>
-              </form>
-            </section>`;
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6" ${this._userRating === 6 && ` checked`}>
+                          <label class="film-details__user-rating-label" for="rating-6">6</label>
+              
+                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userRating === 7 && ` checked`}>
+                            <label class="film-details__user-rating-label" for="rating-7">7</label>
+                
+                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userRating === 8 && ` checked`}>
+                              <label class="film-details__user-rating-label" for="rating-8">8</label>
+                  
+                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userRating === 9 && ` checked`}>
+                                <label class="film-details__user-rating-label" for="rating-9">9</label>
+                    
+                              </div>
+                            </section>
+                          </div>
+                        </section>
+                      </form>
+                    </section>`;
   }
-
-  refresh() {
-    this.unbind();
-    this._partialUpdate();
-    this.bind();
-  }
-
-  _partialUpdate() {
-    this._element.innerHTML = this.template;
-  }
-
 
   bind() {
     this._element.querySelector(`.film-details__close-btn`)
@@ -301,6 +294,9 @@ export default class FilmPopup extends Component {
 
     this._element.querySelector(`.film-details__comment-input`)
       .addEventListener(`keydown`, this._onAddComments);
+
+    this._element.querySelector(`.film-details__user-rating-score`)
+      .addEventListener(`click`, this._onChangeUserRating);
   }
 
   unbind() {
@@ -312,16 +308,13 @@ export default class FilmPopup extends Component {
 
     this._element.querySelector(`.film-details__comment-input`)
       .removeEventListener(`keydown`, this._onAddComments);
+
+    this._element.querySelector(`.film-details__user-rating-score`)
+      .removeEventListener(`click`, this._onChangeUserRating);
   }
 
   update(data) {
-    this._title = data.title;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._year = data.year;
-    this._duration = data.duration;
-    this._genre = data.genre;
     this._comments = data.comments;
-    this._rating = data.rating;
+    this._userRating = data.userRating;
   }
 }
