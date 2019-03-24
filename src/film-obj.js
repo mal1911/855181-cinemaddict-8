@@ -31,16 +31,33 @@ const genresArr = [
   `Fantasy`,
 ];
 
+const countryArr = [
+  `USA`,
+  `Russia`,
+];
+
+const commentsArr = [
+  {
+    emoji: `😀`,
+    text: `So long-long story, boring!`,
+    author: `Tim Macoveev`,
+    date: new Date(),
+  },
+];
+
 export default () => (
   {
     title: getRamdomStringOfArray(3, titlesArr),
     poster: getRandomElementOfArray(postersArr),
     description: getRamdomStringOfArray(getRandomInt(1, 3), descriptionArr),
     year: getRandomInt(1950, 2019),
-    duration: `${getRandomInt(1, 2)}h ${getRandomInt(1, 59)}m`,
+    duration: getRandomInt(1, 360),
     genre: getRandomElementOfArray(genresArr),
-    comments: getRandomInt(0, 100),
+    comments: commentsArr.slice(),
     rating: getRandomInt(0, 1000) / 100,
+    userRating: getRandomInt(1, 9),
+    releaseDate: new Date(),
+    country: getRandomElementOfArray(countryArr),
   }
 );
 
