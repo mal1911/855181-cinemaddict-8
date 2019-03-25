@@ -19,8 +19,21 @@ export default class FilmPopup extends Component {
     this._releaseDate = data.releaseDate;
     this._country = data.country;
 
+    this._isAddWatchlist = data.isAddWatchlist;
+    this._isMarkWatchlist = data.isMarkWatchlist;
+    this._isAddFavorite = data.isAddFavorite;
+
+
     this._onClose = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
+/*
+    this._onAddWatchlist = null;
+    this._onAddWatchlistButtonClick = this._onAddWatchlistButtonClick.bind(this);
+    this._onMarkWatchlist = null;
+    this._onMarkWatchlistButtonClick = this._onMarkWatchlistButtonClick.bind(this);
+    this._onAddFavorite = null;
+    this._onAddFavoriteButtonClick = this._onAddFavoriteButtonClick.bind(this);
+*/
     this._onAddComments = this._onAddComments.bind(this);
     this._onChangeUserRating = this._onChangeUserRating.bind(this);
     this._onEmojiClick = this._onEmojiClick.bind(this);
@@ -28,14 +41,19 @@ export default class FilmPopup extends Component {
 
   _processForm(formData) {
     const entry = {
-      title: `new title`,
-      poster: ``,
-      description: ``,
-      year: ``,
-      duration: ``,
-      genre: [],
+      /*      title: `new title`,
+            poster: ``,
+            description: ``,
+            year: ``,
+            duration: ``,
+            genre: [],
+            rating: ``,*/
+
       comments: [],
-      rating: ``,
+      userRating: 0,
+      isAddWatchlist: false,
+      isMarkWatchlist: false,
+      isAddFavorite: false,
     };
 
     const filmEditMapper = FilmPopup.createMapper(entry);
@@ -47,6 +65,7 @@ export default class FilmPopup extends Component {
       }
     }
     entry.comments = this._comments;
+    //console.log(entry);
     return entry;
   }
 
@@ -56,7 +75,23 @@ export default class FilmPopup extends Component {
         target.userRating = Number(value);
         return target.userRating;
       },
+      watchlist: (value) => {
+        target.isAddWatchlist = Boolean(value);
+        return target.isAddWatchlist;
+      },
+      watched: (value) => {
+        target.isMarkWatchlist = Boolean(value);
+        return target.isMarkWatchlist;
+      },
+      favorite: (value) => {
+        target.isAddFavorite = Boolean(value);
+        return target.isAddFavorite;
+      },
     };
+  }
+
+  set onClose(fn) {
+    this._onClose = fn;
   }
 
   _onCloseButtonClick(evt) {
@@ -69,10 +104,58 @@ export default class FilmPopup extends Component {
     this.update(newData);
   }
 
-  set onClose(fn) {
-    this._onClose = fn;
+  changeAddWatchlist() {
+    this._isAddWatchlist = !this._isAddWatchlist;
   }
 
+  changeMarkWatchlist() {
+    this._isMarkWatchlist = !this._isMarkWatchlist;
+  }
+
+  changeAddFavorite() {
+    this._isAddFavorite = !this._isAddFavorite;
+  }
+
+
+/*
+
+  set onAddWatchlist(fn) {
+    this._onAddWatchlist = fn;
+  }
+
+  _onAddWatchlistButtonClick(evt) {
+    //evt.preventDefault();
+    this._changeAddWatchlist();
+    if (typeof this._onAddWatchlist === `function`) {
+      this._onAddWatchlist();
+    }
+  }
+
+  set onMarkWatchlist(fn) {
+    this._onMarkWatchlist = fn;
+  }
+
+  _onMarkWatchlistButtonClick(evt) {
+    //evt.preventDefault();
+    this._changeMarkWatchlist();
+    if (typeof this._onMarkWatchlist === `function`) {
+      this._onMarkWatchlist();
+    }
+  }
+
+
+  set onAddFavorite(fn) {
+    this._onAddFavorite = fn;
+  }
+
+  _onAddFavoriteButtonClick(evt) {
+    //evt.preventDefault();
+    this._changeAddFavorite();
+    if (typeof this._onAddFavorite === `function`) {
+      this._onAddFavorite();
+    }
+  }
+*/
   _onAddComments(evt) {
     if (evt.ctrlKey && evt.keyCode === ENTER_KEY) {
       const element = evt.target;
@@ -194,18 +277,18 @@ export default class FilmPopup extends Component {
                 </div>
             
                 <section class="film-details__controls">
-                  <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist">
-                  <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
-            
-                  <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" checked>
-                  <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
-            
-                  <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite">
-                  <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
-                </section>
-            
-                <section class="film-details__comments-wrap">
-                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
+                  <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist" ${this._isAddWatchlist && ` checked`}>
+                    <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+              
+                    <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" ${this._isMarkWatchlist && ` checked`}>
+                      <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
+                
+                      <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite" ${this._isAddFavorite && ` checked`}>
+                        <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
+                      </section>
+                  
+                      <section class="film-details__comments-wrap">
+                        <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
             
                   <ul class="film-details__comments-list">
                     ${this._getCommentsHTML()}
@@ -289,12 +372,17 @@ export default class FilmPopup extends Component {
     this._element.querySelector(`.film-details__close-btn`)
       .addEventListener(`click`, this._onCloseButtonClick);
 
+    /*this._element.querySelector(`.film-details__control-label--watchlist`)
+      .addEventListener(`click`, this._onAddWatchlistButtonClick);
+    this._element.querySelector(`.film-details__control-label--watched`)
+      .addEventListener(`click`, this._onMarkWatchlistButtonClick);
+    this._element.querySelector(`.film-details__control-label--favorite`)
+      .addEventListener(`click`, this._onAddFavoriteButtonClick);*/
+
     this._element.querySelector(`.film-details__emoji-list`)
       .addEventListener(`click`, this._onEmojiClick);
-
     this._element.querySelector(`.film-details__comment-input`)
       .addEventListener(`keydown`, this._onAddComments);
-
     this._element.querySelector(`.film-details__user-rating-score`)
       .addEventListener(`click`, this._onChangeUserRating);
   }
@@ -302,6 +390,13 @@ export default class FilmPopup extends Component {
   unbind() {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseButtonClick);
+
+    /*this._element.querySelector(`.film-details__control-label--watchlist`)
+      .removeEventListener(`click`, this._onAddWatchlistButtonClick);
+    this._element.querySelector(`.film-details__control-label--watched`)
+      .removeEventListener(`click`, this._onMarkWatchlistButtonClick);
+    this._element.querySelector(`.film-details__control-label--favorite`)
+      .removeEventListener(`click`, this._onAddFavoriteButtonClick);*/
 
     this._element.querySelector(`.film-details__emoji-list`)
       .removeEventListener(`click`, this._onEmojiClick);
@@ -316,5 +411,8 @@ export default class FilmPopup extends Component {
   update(data) {
     this._comments = data.comments;
     this._userRating = data.userRating;
+    this._isAddWatchlist = data.isAddWatchlist;
+    this._isMarkWatchlist = data.isMarkWatchlist;
+    this._isAddFavorite = data.isAddFavorite;
   }
 }

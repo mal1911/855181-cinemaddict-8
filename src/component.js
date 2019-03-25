@@ -1,5 +1,3 @@
-import {createElement} from "./utils";
-
 export default class Component {
   constructor() {
     if (new.target === Component) {
@@ -19,7 +17,7 @@ export default class Component {
   }
 
   render() {
-    this._element = createElement(this.template);
+    this._element = this.createElement(this.template);
     this.bind();
     return this._element;
   }
@@ -34,5 +32,11 @@ export default class Component {
     this.unbind();
     this._element.remove();
     this._element = null;
+  }
+
+  createElement(template) {
+    const newElement = document.createElement(`div`);
+    newElement.innerHTML = template;
+    return newElement.firstChild;
   }
 }
