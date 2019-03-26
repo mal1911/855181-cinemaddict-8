@@ -6,10 +6,6 @@ import Film from './film';
 import FilmPopup from './film-popup';
 import {removeChildElements} from "./utils";
 
-const getActiveFilterTitle = (mainNavigationElement) => {
-  return mainNavigationElement.querySelector(`.main-navigation__item--active`).innerText;
-};
-
 const renderFilters = (data, mainNavigationElement, filmListElement) => {
   const filterData = [`All`, `Watchlist`, `History`, `Favorites`];
   const fragment = document.createDocumentFragment();
@@ -17,7 +13,7 @@ const renderFilters = (data, mainNavigationElement, filmListElement) => {
   filterData.forEach((title) => {
     const filterComponent = new Filter(title, title === `All`);
     filterComponent.onClick = () => {
-      renderFilms(filterFilms(data, title), filmListElement, mainNavigationElement, {isControls: true});
+      renderFilms(getFilterFilmsData(data), filmListElement, {isControls: true});
     };
     fragment.appendChild(filterComponent.render());
   });
@@ -30,7 +26,8 @@ const updateFilm = (data, oldFilm, newFilm) => {
   return data[i];
 };
 
-const filterFilms = (data, title = ``) => {
+const getFilterFilmsData = (data) => {
+  const title = document.querySelector(`.main-navigation__item--active`).textContent.trim();
   switch (title) {
     case `Watchlist`:
       return data.filter((it) => it.isAddWatchlist);
@@ -42,59 +39,37 @@ const filterFilms = (data, title = ``) => {
   return data;
 };
 
-const renderFilms = (data, filmListElement, mainNavigationElement, param) => {
+const renderFilms = (data, filmListElement, param) => {
   const bodyElement = document.querySelector(`body`);
   const fragment = document.createDocumentFragment();
   removeChildElements(filmListElement);
-  data.forEach((film) => {
-    const filmComponent = new Film(film, param);
-    const filmPopupComponent = new FilmPopup(film);
+  data.forEach((filmObj) => {
+    const filmComponent = new Film(filmObj, param);
+    const filmPopupComponent = new FilmPopup(filmObj);
 
     filmComponent.onComments = () => {
       filmPopupComponent.render();
       bodyElement.insertAdjacentElement(`beforeend`, filmPopupComponent.element);
     };
 
-    filmComponent.onAddWatchlist = (AddWatchlist) => {
-      filmPopupComponent.changeAddWatchlist();
-      data[data.indexOf(film)].isAddWatchlist = AddWatchlist;
-      renderFilms(filterFilms(data, getActiveFilterTitle(mainNavigationElement)), filmListElement, mainNavigationElement, {isControls: true});
+    filmComponent.onAddWatchlist = (value) => {
+      filmPopupComponent.changeAddWatchlist(value);
     };
 
-    filmComponent.onMarkWatchlist = (MarkWatchlist) => {
-      filmPopupComponent.changeMarkWatchlist();
-      data[data.indexOf(film)].isMarkWatchlist = MarkWatchlist;
-      renderFilms(filterFilms(data, getActiveFilterTitle(mainNavigationElement)), filmListElement, mainNavigationElement, {isControls: true});
+    filmComponent.onMarkWatchlist = (value) => {
+      filmPopupComponent.changeMarkWatchlist(value);
     };
 
-    filmComponent.onAddFavorite = (AddFavorite) => {
-      console.log(`favorite ` + AddFavorite);
-      filmPopupComponent.changeAddFavorite();
-      data[data.indexOf(film)].isAddFavorite = AddFavorite;
-      renderFilms(filterFilms(data, getActiveFilterTitle(mainNavigationElement)), filmListElement, mainNavigationElement, {isControls: true});
+    filmComponent.onAddFavorite = (value) => {
+      filmPopupComponent.changeAddFavorite(value);
     };
 
-    filmPopupComponent.onClose = (newObject) => {
-      /*film.title = newObject.title;
-      film.poster = newObject.poster;
-      film.description = newObject.description;
-      film.year = newObject.year;
-      film.duration = newObject.duration;
-      film.genre = newObject.genre;
-      film.rating = newObject.rating;*/
-
-      /*film.comments = newObject.comments;
-      film.userRating = newObject.userRating;
-      film.isAddWatchlist = newObject.isAddWatchlist;
-      film.isMarkWatchlist = newObject.isMarkWatchlist;
-      film.isAddFavorite = newObject.isAddFavorite;*/
-
-      const updatedFilm = updateFilm(data, film, newObject);
-      filmComponent.update(updatedFilm);
+    filmPopupComponent.onSave = (newObj) => {
+      const updatedFilmObj = updateFilm(data, filmObj, newObj);
+      filmComponent.update(updatedFilmObj);
       filmComponent.refresh();
       bodyElement.removeChild(filmPopupComponent.element);
       filmPopupComponent.unrender();
-      renderFilms(filterFilms(data, getActiveFilterTitle(mainNavigationElement)), filmListElement, {isControls: true});
     };
     fragment.appendChild(filmComponent.render());
   });
@@ -109,7 +84,7 @@ const main = () => {
   const filmListElement = document.querySelector(`.films-list .films-list__container`);
 
   renderFilters(filmsData, mainNavigationElement, filmListElement);
-  renderFilms(filmsData, filmListElement, mainNavigationElement, {isControls: true});
+  renderFilms(filmsData, filmListElement, {isControls: true});
 
 
   const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
