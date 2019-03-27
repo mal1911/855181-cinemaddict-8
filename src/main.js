@@ -1,23 +1,25 @@
 import {getDataFromObj, getRandomArray} from './utils.js';
-
 import getFilmObj from './film-obj.js';
 import Filter from './filter';
 import Film from './film';
 import FilmPopup from './film-popup';
 import {removeChildElements} from "./utils";
+import Chart from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
 
 const renderFilters = (data, mainNavigationElement, filmListElement) => {
   const filterData = [`All`, `Watchlist`, `History`, `Favorites`];
   const fragment = document.createDocumentFragment();
-  removeChildElements(mainNavigationElement);
   filterData.forEach((title) => {
     const filterComponent = new Filter(title, title === `All`);
     filterComponent.onClick = () => {
+      hideStatictic();
       renderFilms(getFilterFilmsData(data), filmListElement, {isControls: true});
     };
     fragment.appendChild(filterComponent.render());
   });
-  mainNavigationElement.appendChild(fragment);
+  mainNavigationElement.prepend(fragment);
 };
 
 const updateFilm = (data, oldFilm, newFilm) => {
@@ -49,7 +51,7 @@ const renderFilms = (data, filmListElement, param) => {
 
     filmComponent.onComments = () => {
       filmPopupComponent.render();
-      bodyElement.insertAdjacentElement(`beforeend`, filmPopupComponent.element);
+      bodyElement.append(filmPopupComponent.element);
     };
 
     filmComponent.onAddWatchlist = (value) => {
@@ -76,9 +78,9 @@ const renderFilms = (data, filmListElement, param) => {
   filmListElement.appendChild(fragment);
 };
 
-const showStatictic = () => {
-  document.querySelector(`.statistic`).classList.remove(`visually-hidden`);
-  document.querySelector(`.films`).classList.add(`visually-hidden`);
+const toggleStatictic = () => {
+  document.querySelector(`.statistic`).classList.toggle(`visually-hidden`);
+  document.querySelector(`.films`).classList.toggle(`visually-hidden`);
 };
 
 const hideStatictic = () => {
@@ -86,6 +88,83 @@ const hideStatictic = () => {
   document.querySelector(`.films`).classList.remove(`visually-hidden`);
 };
 
+const renderStatistic = (filmsData) => {
+  if (!document.querySelector(`.statistic`).classList.contains(`visually-hidden`)) {
+    console.log(`renderChart`);
+    const staticticContainer = document.querySelector(`.statistic__chart-wrap`);
+    staticticContainer.innerHTML = ``;
+    staticticContainer.innerHTML = `<canvas class="statistic__chart" width="1000"></canvas>`;
+
+    const statisticCtx = document.querySelector(`.statistic__chart`);
+
+    // Обязательно рассчитайте высоту canvas, она зависит от количества элементов диаграммы
+    const BAR_HEIGHT = 50;
+    statisticCtx.height = BAR_HEIGHT * 5;
+    const myChart = new Chart(statisticCtx, {
+      plugins: [ChartDataLabels],
+      type: `horizontalBar`,
+      data: {
+        labels: [`Sci-Fi`, `Animation`, `Fantasy`, `Comedy`, `TV Series`],
+        datasets: [{
+          data: [11, 8, 7, 4, 3],
+          backgroundColor: `#ffe800`,
+          hoverBackgroundColor: `#ffe800`,
+          anchor: `start`,
+        }],
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            font: {
+              size: 20,
+            },
+            color: `#ffffff`,
+            anchor: 'start',
+            align: 'start',
+            offset: 40,
+          },
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              fontColor: `#ffffff`,
+              padding: 100,
+              fontSize: 20,
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false,
+            },
+            barThickness: 24,
+          }],
+          xAxes: [{
+            ticks: {
+              display: false,
+              beginAtZero: true,
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false,
+            },
+          }],
+        },
+        legend: {
+          display: false,
+        },
+        tooltips: {
+          enabled: false,
+        },
+      },
+    });
+
+
+  }
+};
+
+const onStaticticClick = (data) => {
+  toggleStatictic();
+  renderStatistic(data);
+};
 
 const main = () => {
   const MAX_FILMS = 7;
@@ -102,6 +181,12 @@ const main = () => {
   renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
   renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
 
+  const statisticMenuItemElement = mainNavigationElement.querySelector(`.main-navigation__item--additional`);
+  statisticMenuItemElement.addEventListener(`click`, () => {
+    toggleStatictic();
+    renderStatistic(filmsData);
+
+  });
   hideStatictic();
 };
 
