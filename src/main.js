@@ -76,6 +76,17 @@ const renderFilms = (data, filmListElement, param) => {
   filmListElement.appendChild(fragment);
 };
 
+const showStatictic = () => {
+  document.querySelector(`.statistic`).classList.remove(`visually-hidden`);
+  document.querySelector(`.films`).classList.add(`visually-hidden`);
+};
+
+const hideStatictic = () => {
+  document.querySelector(`.statistic`).classList.add(`visually-hidden`);
+  document.querySelector(`.films`).classList.remove(`visually-hidden`);
+};
+
+
 const main = () => {
   const MAX_FILMS = 7;
   const filmsData = getDataFromObj(MAX_FILMS, getFilmObj);
@@ -91,6 +102,7 @@ const main = () => {
   renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
   renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
 
+  hideStatictic();
 };
 
 main();
