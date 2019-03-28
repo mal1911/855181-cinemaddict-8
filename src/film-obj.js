@@ -1,4 +1,4 @@
-import {getRamdomStringOfArray, getRandomBool, getRandomElementOfArray, getRandomInt} from "./utils";
+import {getRamdomStringOfArray, getRandomArray, getRandomBool, getRandomElementOfArray, getRandomInt} from "./utils";
 
 const titlesArr = `Обратите внимание Чтобы понять, что должно оказаться в данных, а что нет,
 задайте себе вопрос: «Есть ли смысл скачивать эту информацию с сервера отдельно, 
@@ -52,7 +52,7 @@ export default () => (
     description: getRamdomStringOfArray(getRandomInt(1, 3), descriptionArr),
     year: getRandomInt(1950, 2019),
     duration: getRandomInt(1, 360),
-    genre: getRandomElementOfArray(genresArr),
+    genre: getRandomArray(genresArr, getRandomInt(1, genresArr.length)),
     comments: commentsArr.slice(),
     rating: getRandomInt(0, 1000) / 100,
     userRating: getRandomInt(1, 9),

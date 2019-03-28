@@ -28,8 +28,10 @@ const updateFilm = (data, oldFilm, newFilm) => {
   return data[i];
 };
 
-const getFilterFilmsData = (data) => {
-  const title = document.querySelector(`.main-navigation__item--active`).textContent.trim();
+const getFilterFilmsData = (data, title = ``) => {
+  if (!title) {
+    title = document.querySelector(`.main-navigation__item--active`).textContent.trim();
+  }
   switch (title) {
     case `Watchlist`:
       return data.filter((it) => it.isAddWatchlist);
@@ -89,24 +91,55 @@ const hideStatictic = () => {
 };
 
 const renderStatistic = (filmsData) => {
-  if (!document.querySelector(`.statistic`).classList.contains(`visually-hidden`)) {
-    console.log(`renderChart`);
-    const staticticContainer = document.querySelector(`.statistic__chart-wrap`);
-    staticticContainer.innerHTML = ``;
+  const statisticElement = document.querySelector(`.statistic`);
+  if (!statisticElement.classList.contains(`visually-hidden`)) {
+    const staticticContainer = statisticElement.querySelector(`.statistic__chart-wrap`);
+    removeChildElements(staticticContainer);
     staticticContainer.innerHTML = `<canvas class="statistic__chart" width="1000"></canvas>`;
+    const statisticCtx = statisticElement.querySelector(`.statistic__chart`);
 
-    const statisticCtx = document.querySelector(`.statistic__chart`);
-
-    // Обязательно рассчитайте высоту canvas, она зависит от количества элементов диаграммы
     const BAR_HEIGHT = 50;
+    let genreData = [];
+    let watched = 0;
+    let duration = 0;
+
+    const historyData = getFilterFilmsData(filmsData, `History`);
+
+    historyData.forEach((filmObj) => {
+      genreData.push(...filmObj.genre);
+      watched++;
+      duration += filmObj.duration;
+    });
+
+    let labels = [];
+    let data = [];
+
+    genreData.forEach((genreObj) => {
+      let i = labels.indexOf(genreObj);
+      if (i === -1) {
+        i = labels.length;
+        labels.push(genreObj);
+        data.push(1);
+      } else {
+        data[i] += 1;
+      }
+    });
+
+    const statisticItemElements = statisticElement.querySelectorAll(`.statistic__item-text`);
+    statisticItemElements[0].innerHTML = `${watched} <span class="statistic__item-description">movies</span>`;
+    statisticItemElements[1].innerHTML = `${parseInt(duration / 60, 10)} <span class="statistic__item-description">h</span> 
+                                          ${parseInt(duration % 60, 10)} <span class="statistic__item-description">m</span>`;
+    statisticItemElements[2].textContent = labels[data.indexOf(Math.max(...data))];
+
+
     statisticCtx.height = BAR_HEIGHT * 5;
     const myChart = new Chart(statisticCtx, {
       plugins: [ChartDataLabels],
       type: `horizontalBar`,
       data: {
-        labels: [`Sci-Fi`, `Animation`, `Fantasy`, `Comedy`, `TV Series`],
+        labels,
         datasets: [{
-          data: [11, 8, 7, 4, 3],
+          data,
           backgroundColor: `#ffe800`,
           hoverBackgroundColor: `#ffe800`,
           anchor: `start`,
@@ -119,8 +152,8 @@ const renderStatistic = (filmsData) => {
               size: 20,
             },
             color: `#ffffff`,
-            anchor: 'start',
-            align: 'start',
+            anchor: `start`,
+            align: `start`,
             offset: 40,
           },
         },
@@ -156,14 +189,9 @@ const renderStatistic = (filmsData) => {
         },
       },
     });
-
-
+    return myChart;
   }
-};
-
-const onStaticticClick = (data) => {
-  toggleStatictic();
-  renderStatistic(data);
+  return false;
 };
 
 const main = () => {

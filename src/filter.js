@@ -47,8 +47,4 @@ export default class extends Component {
   unbind() {
     this._element.removeEventListener(`click`, this._onMenuClick);
   }
-
-  update(data) {
-
-  }
 }
