@@ -9,7 +9,7 @@ export const getRandomInt = (min, max) =>
   Math.floor(Math.random() * (1 + max - min)) + min;
 
 export const getRandomBool = () =>
-  getRandomInt(0, 1) === 1 ? true : false;
+  getRandomInt(0, 1) === 1;
 
 export const getRandomArray = (arr, count) =>
   getClipArray(getMixArray(arr), count);

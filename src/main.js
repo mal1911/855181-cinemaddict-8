@@ -1,3 +1,4 @@
+import {FILTER_DATA} from "./constants";
 import {getDataFromObj, getRandomArray} from './utils.js';
 import getFilmObj from './film-obj.js';
 import Filter from './filter';
@@ -7,9 +8,10 @@ import {removeChildElements} from "./utils";
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
+const BAR_HEIGHT = 50;
 
 const renderFilters = (data, mainNavigationElement, filmListElement) => {
-  const filterData = [`All`, `Watchlist`, `History`, `Favorites`];
+  const filterData = FILTER_DATA;
   const fragment = document.createDocumentFragment();
   filterData.forEach((title) => {
     const filterComponent = new Filter(title, title === `All`);
@@ -98,7 +100,6 @@ const renderStatistic = (filmsData) => {
     staticticContainer.innerHTML = `<canvas class="statistic__chart" width="1000"></canvas>`;
     const statisticCtx = statisticElement.querySelector(`.statistic__chart`);
 
-    const BAR_HEIGHT = 50;
     let genreData = [];
     let watched = 0;
     let duration = 0;
@@ -117,7 +118,6 @@ const renderStatistic = (filmsData) => {
     genreData.forEach((genreObj) => {
       let i = labels.indexOf(genreObj);
       if (i === -1) {
-        i = labels.length;
         labels.push(genreObj);
         data.push(1);
       } else {
