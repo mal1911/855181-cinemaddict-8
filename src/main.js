@@ -4,11 +4,14 @@ import getFilmObj from './film-obj.js';
 import Filter from './filter';
 import Film from './film';
 import FilmPopup from './film-popup';
+import API from './api';
 import {removeChildElements} from "./utils";
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 const BAR_HEIGHT = 50;
+const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
+const END_POINT = `https://es8-demo-srv.appspot.com/moowle/`;
 
 const renderFilters = (data, mainNavigationElement, filmListElement) => {
   const filterData = FILTER_DATA;
@@ -195,6 +198,8 @@ const renderStatistic = (filmsData) => {
 };
 
 const main = () => {
+  const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+
   const MAX_FILMS = 7;
   const filmsData = getDataFromObj(MAX_FILMS, getFilmObj);
 
@@ -202,6 +207,13 @@ const main = () => {
   const filmListElement = document.querySelector(`.films-list .films-list__container`);
 
   renderFilters(filmsData, mainNavigationElement, filmListElement);
+
+  api.getFilms().then((films) => {
+    //renderFilms(films, filmListElement, {isControls: true});
+    console.log(films);
+  });
+
+
   renderFilms(filmsData, filmListElement, {isControls: true});
 
 
