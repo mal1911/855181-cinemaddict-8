@@ -1,5 +1,4 @@
 import Component from './component';
-import {createElement} from "./utils";
 import moment from 'moment';
 
 
@@ -15,17 +14,79 @@ export default class extends Component {
     this._comments = data.comments;
     this._rating = data.rating;
     this._userRating = data.userRating;
+
+    this._isAddWatchlist = data.isAddWatchlist;
+    this._isMarkWatchlist = data.isMarkWatchlist;
+    this._isAddFavorite = data.isAddFavorite;
+
     this._param = param;
+
     this._onComments = null;
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
-  }
-
-  _onCommentsButtonClick() {
-    return typeof this._onComments === `function` && this._onComments();
+    this._onAddWatchlist = null;
+    this._onAddWatchlistButtonClick = this._onAddWatchlistButtonClick.bind(this);
+    this._onMarkWatchlist = null;
+    this._onMarkWatchlistButtonClick = this._onMarkWatchlistButtonClick.bind(this);
+    this._onAddFavorite = null;
+    this._onAddFavoriteButtonClick = this._onAddFavoriteButtonClick.bind(this);
   }
 
   set onComments(fn) {
     this._onComments = fn;
+  }
+
+  _onCommentsButtonClick() {
+    if (typeof this._onComments === `function`) {
+      this._onComments();
+    }
+  }
+
+  _changeAddWatchlist() {
+    this._isAddWatchlist = !this._isAddWatchlist;
+  }
+
+  set onAddWatchlist(fn) {
+    this._onAddWatchlist = fn;
+  }
+
+  _onAddWatchlistButtonClick(evt) {
+    evt.preventDefault();
+    this._changeAddWatchlist();
+    if (typeof this._onAddWatchlist === `function`) {
+      this._onAddWatchlist(this._isAddWatchlist);
+    }
+  }
+
+  _changeMarkWatchlist() {
+    this._isMarkWatchlist = !this._isMarkWatchlist;
+  }
+
+  set onMarkWatchlist(fn) {
+    this._onMarkWatchlist = fn;
+  }
+
+  _onMarkWatchlistButtonClick(evt) {
+    evt.preventDefault();
+    this._changeMarkWatchlist();
+    if (typeof this._onMarkWatchlist === `function`) {
+      this._onMarkWatchlist(this._isMarkWatchlist);
+    }
+  }
+
+  _changeAddFavorite() {
+    this._isAddFavorite = !this._isAddFavorite;
+  }
+
+  set onAddFavorite(fn) {
+    this._onAddFavorite = fn;
+  }
+
+  _onAddFavoriteButtonClick(evt) {
+    evt.preventDefault();
+    this._changeAddFavorite();
+    if (typeof this._onAddFavorite === `function`) {
+      this._onAddFavorite(this._isAddFavorite);
+    }
   }
 
   _isControls() {
@@ -63,21 +124,40 @@ export default class extends Component {
   }
 
   _partialUpdate() {
-    this._element.innerHTML = createElement(this.template).innerHTML;
+    this._element.innerHTML = this.createElement(this.template).innerHTML;
   }
 
   bind() {
     this._element.querySelector(`.film-card__comments`)
       .addEventListener(`click`, this._onCommentsButtonClick);
+    if (this._isControls()) {
+      this._element.querySelector(`.film-card__controls-item--add-to-watchlist`)
+        .addEventListener(`click`, this._onAddWatchlistButtonClick);
+      this._element.querySelector(`.film-card__controls-item--mark-as-watched`)
+        .addEventListener(`click`, this._onMarkWatchlistButtonClick);
+      this._element.querySelector(`.film-card__controls-item--favorite`)
+        .addEventListener(`click`, this._onAddFavoriteButtonClick);
+    }
   }
 
   unbind() {
     this._element.querySelector(`.film-card__comments`)
       .removeEventListener(`click`, this._onCommentsButtonClick);
+    if (this._isControls()) {
+      this._element.querySelector(`.film-card__controls-item--add-to-watchlist`)
+        .removeEventListener(`click`, this._onAddWatchlistButtonClick);
+      this._element.querySelector(`.film-card__controls-item--mark-as-watched`)
+        .removeEventListener(`click`, this._onMarkWatchlistButtonClick);
+      this._element.querySelector(`.film-card__controls-item--favorite`)
+        .removeEventListener(`click`, this._onAddFavoriteButtonClick);
+    }
   }
 
   update(data) {
     this._comments = data.comments;
     this._userRating = data.userRating;
+    this._isAddWatchlist = data.isAddWatchlist;
+    this._isMarkWatchlist = data.isMarkWatchlist;
+    this._isAddFavorite = data.isAddFavorite;
   }
 }
