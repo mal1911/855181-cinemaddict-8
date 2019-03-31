@@ -12,15 +12,17 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 const BAR_HEIGHT = 50;
 const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/moowle/`;
+const MAX_FILMS = 5;
+let pageIndex = 1;
 
-const renderFilters = (data, mainNavigationElement, filmListElement) => {
+const renderFilters = (data, mainNavigationElement, filmListElement, showMoreElement) => {
   const filterData = FILTER_DATA;
   const fragment = document.createDocumentFragment();
   filterData.forEach((title) => {
     const filterComponent = new Filter(title, title === `All`);
     filterComponent.onClick = () => {
       hideStatictic();
-      renderFilms(getFilterFilmsData(data), filmListElement, {isControls: true});
+      showPrevFilms(getFilterFilmsData(data), filmListElement, showMoreElement);
     };
     fragment.appendChild(filterComponent.render());
   });
@@ -52,35 +54,37 @@ const renderFilms = (data, filmListElement, param) => {
   const bodyElement = document.querySelector(`body`);
   const fragment = document.createDocumentFragment();
   removeChildElements(filmListElement);
-  data.forEach((filmObj) => {
-    const filmComponent = new Film(filmObj, param);
-    const filmPopupComponent = new FilmPopup(filmObj);
+  data.forEach((filmObj, i) => {
+    if (i >= pageIndex - 1 * MAX_FILMS && i < pageIndex * MAX_FILMS) {
+      const filmComponent = new Film(filmObj, param);
+      const filmPopupComponent = new FilmPopup(filmObj);
 
-    filmComponent.onComments = () => {
-      filmPopupComponent.render();
-      bodyElement.append(filmPopupComponent.element);
-    };
+      filmComponent.onComments = () => {
+        filmPopupComponent.render();
+        bodyElement.append(filmPopupComponent.element);
+      };
 
-    filmComponent.onAddWatchlist = (value) => {
-      filmPopupComponent.changeAddWatchlist(value);
-    };
+      filmComponent.onAddWatchlist = (value) => {
+        filmPopupComponent.changeAddWatchlist(value);
+      };
 
-    filmComponent.onMarkWatchlist = (value) => {
-      filmPopupComponent.changeMarkWatchlist(value);
-    };
+      filmComponent.onMarkWatchlist = (value) => {
+        filmPopupComponent.changeMarkWatchlist(value);
+      };
 
-    filmComponent.onAddFavorite = (value) => {
-      filmPopupComponent.changeAddFavorite(value);
-    };
+      filmComponent.onAddFavorite = (value) => {
+        filmPopupComponent.changeAddFavorite(value);
+      };
 
-    filmPopupComponent.onSave = (newObj) => {
-      const updatedFilmObj = updateFilm(data, filmObj, newObj);
-      filmComponent.update(updatedFilmObj);
-      filmComponent.refresh();
-      bodyElement.removeChild(filmPopupComponent.element);
-      filmPopupComponent.unrender();
-    };
-    fragment.appendChild(filmComponent.render());
+      filmPopupComponent.onSave = (newObj) => {
+        const updatedFilmObj = updateFilm(data, filmObj, newObj);
+        filmComponent.update(updatedFilmObj);
+        filmComponent.refresh();
+        bodyElement.removeChild(filmPopupComponent.element);
+        filmPopupComponent.unrender();
+      };
+      fragment.appendChild(filmComponent.render());
+    }
   });
   filmListElement.appendChild(fragment);
 };
@@ -197,35 +201,50 @@ const renderStatistic = (filmsData) => {
   return false;
 };
 
+const showNextFilms = (filmsData, filmListElement, showMoreElement) => {
+  renderFilms(filmsData, filmListElement, {isControls: true});
+  const maxPageIndex = filmsData.length / MAX_FILMS;
+  if (pageIndex < maxPageIndex) {
+    pageIndex++;
+    showMoreElement.classList.remove(`visually-hidden`);
+  } else {
+    showMoreElement.classList.add(`visually-hidden`);
+  }
+};
+
+const showPrevFilms = (filmsData, filmListElement, showMoreElement) => {
+  pageIndex = 1;
+  showNextFilms(filmsData, filmListElement, showMoreElement);
+};
+
+
 const main = () => {
   const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
-  const MAX_FILMS = 7;
-  const filmsData = getDataFromObj(MAX_FILMS, getFilmObj);
-
   const mainNavigationElement = document.querySelector(`.main-navigation`);
   const filmListElement = document.querySelector(`.films-list .films-list__container`);
+  const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
+  const showMoreElement = document.querySelector(`.films-list__show-more`);
 
-  renderFilters(filmsData, mainNavigationElement, filmListElement);
 
+  let filmsData = [];// = getDataFromObj(MAX_FILMS, getFilmObj);
   api.getFilms().then((films) => {
-    //renderFilms(films, filmListElement, {isControls: true});
-    console.log(films);
+    filmsData = films;
+    renderFilters(filmsData, mainNavigationElement, filmListElement, showMoreElement);
+    showPrevFilms(filmsData, filmListElement, showMoreElement);
+    renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
+    renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
   });
 
-
-  renderFilms(filmsData, filmListElement, {isControls: true});
-
-
-  const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
-  renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
-  renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
 
   const statisticMenuItemElement = mainNavigationElement.querySelector(`.main-navigation__item--additional`);
   statisticMenuItemElement.addEventListener(`click`, () => {
     toggleStatictic();
     renderStatistic(filmsData);
+  });
 
+  showMoreElement.addEventListener(`click`, () => {
+    showNextFilms(getFilterFilmsData(filmsData), filmListElement, showMoreElement);
   });
   hideStatictic();
 };

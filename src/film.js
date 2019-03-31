@@ -5,19 +5,19 @@ import moment from 'moment';
 export default class extends Component {
   constructor(data, param) {
     super();
-    this._title = data.title;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._year = data.year;
-    this._duration = data.duration;
-    this._genre = data.genre;
-    this._comments = data.comments;
-    this._rating = data.rating;
-    this._userRating = data.userRating;
+    this._title = data.filimInfo.title;
+    this._poster = data.filimInfo.poster;
+    this._description = data.filimInfo.description;
+    this._dateRelease = data.filimInfo.release.date; // год правильно поставить
+    this._duration = data.filimInfo.runtime;
+    this._genre = data.filimInfo.genre.slice();
+    this._comments = data.comments.slice();
+    this._rating = data.filimInfo.totalRating;
+    this._userRating = data.userDetails.personalRating;
 
-    this._isAddWatchlist = data.isAddWatchlist;
-    this._isMarkWatchlist = data.isMarkWatchlist;
-    this._isAddFavorite = data.isAddFavorite;
+    this._isAddWatchlist = data.userDetails.watchlist;
+    this._isMarkWatchlist = data.userDetails.alreadyWatched;
+    this._isAddFavorite = data.userDetails.favorite;
 
     this._param = param;
 
@@ -106,11 +106,11 @@ export default class extends Component {
       <h3 class="film-card__title">${this._title}</h3>
       <p class="film-card__rating">${this._rating}</p>
       <p class="film-card__info">
-        <span class="film-card__year">${moment(`${this._year}-01-01`).format(`YYYY`)}</span>
-        <span class="film-card__duration">${moment().startOf(`day`).add(this._duration * 60 * 1000).format(`h:mm`)}</span>
-          <span class="film-card__genre">${this._genre}</span>
-      </p>
-      <img src="./images/posters/${this._poster}" alt="" class="film-card__poster">
+        <span class="film-card__year">${moment(this._dateRelease).format(`YYYY`)}</span>
+        <span class="film-card__duration">${moment().startOf(`day`).add(this._duration * 60 * 1000).format(`hh:mm`)}</span>
+            <span class="film-card__genre">${this._genre.join(`, `)}</span>
+        </p>
+        <img src="./${this._poster}" alt="" class="film-card__poster">
       <p class="film-card__description">${this._description}</p>
      <button class="film-card__comments">${this._comments.length} comments</button>
       ${this._isControls() ? this._getControlsHTML() : ``}

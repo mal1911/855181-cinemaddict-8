@@ -7,21 +7,29 @@ const ENTER_KEY = 13;
 export default class FilmPopup extends Component {
   constructor(data) {
     super();
-    this._title = data.title;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._year = data.year;
-    this._duration = data.duration;
-    this._genre = data.genre;
-    this._comments = data.comments;
-    this._rating = data.rating;
-    this._userRating = data.userRating;
-    this._releaseDate = data.releaseDate;
-    this._country = data.country;
 
-    this._isAddWatchlist = data.isAddWatchlist;
-    this._isMarkWatchlist = data.isMarkWatchlist;
-    this._isAddFavorite = data.isAddFavorite;
+    this._title = data.filimInfo.title;
+    this._poster = data.filimInfo.poster;
+    this._description = data.filimInfo.description;
+    this._alternativeTitle = data.filimInfo.alternativeTitle;
+
+    this._dateRelease = data.filimInfo.release.date; // год правильно поставить
+    this._duration = data.filimInfo.runtime;
+    this._director = data.filimInfo.director;
+    this._writers = data.filimInfo.writers.slice();
+    this._actors = data.filimInfo.actors.slice();
+
+
+    this._genre = data.filimInfo.genre.slice();
+    this._comments = data.comments.slice();
+    this._ageRating = data.filimInfo.ageRating;
+    this._rating = data.filimInfo.totalRating;
+    this._userRating = parseInt(data.userDetails.personalRating, 10);
+    this._country = data.filimInfo.release.releaseCountry;
+
+    this._isAddWatchlist = data.userDetails.watchlist;
+    this._isMarkWatchlist = data.userDetails.alreadyWatched;
+    this._isAddFavorite = data.userDetails.favorite;
 
     this._onSave = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
@@ -103,14 +111,25 @@ export default class FilmPopup extends Component {
   }
 
   _onAddComments(evt) {
+    const getEmotion = (emotion) => {
+      switch (emotion) {
+        case `😴`:
+          return `sleeping`;
+        case `😐`:
+          return `neutral-face`;
+        case `😀`:
+          return `grinning`;
+      }
+      return ``;
+    };
     if (evt.ctrlKey && evt.keyCode === ENTER_KEY) {
       const element = evt.target;
-      const emoji = this._element.querySelector(`.film-details__add-emoji-label`).textContent.trim();
-      const text = element.value;
-      if (text) {
+      const emotion = getEmotion(this._element.querySelector(`.film-details__add-emoji-label`).textContent);
+      const comment = element.value;
+      if (comment) {
         this._comments.push({
-          emoji,
-          text,
+          emotion,
+          comment,
           author: ``,
           date: new Date(),
         });
@@ -128,15 +147,26 @@ export default class FilmPopup extends Component {
 
   _onEmojiClick(evt) {
     if (evt.target.tagName === `LABEL`) {
-      this._element.querySelector(`.film-details__add-emoji-label`).innerText = evt.target.innerText;
+      this._element.querySelector(`.film-details__add-emoji-label`).textContent = evt.target.textContent;
     }
   }
 
   _getCommentHTML(comment) {
+    const getEmotion = (emotion) => {
+      switch (emotion) {
+        case `sleeping`:
+          return `😴`;
+        case `neutral-face`:
+          return `😐`;
+        case `grinning`:
+          return `😀`;
+      }
+      return ``;
+    };
     return `<li class="film-details__comment">
-              <span class="film-details__comment-emoji">${comment.emoji}</span>
+              <span class="film-details__comment-emoji">${getEmotion(comment.emotion)}</span>
                 <div>
-                  <p class="film-details__comment-text">${comment.text}</p>
+                  <p class="film-details__comment-text">${comment.comment}</p>
                   <p class="film-details__comment-info">
                     <span class="film-details__comment-author">${comment.author}</span>
                     <span class="film-details__comment-day">${moment(comment.date).format(`DD.MM.YYYY`)}</span>
@@ -164,16 +194,16 @@ export default class FilmPopup extends Component {
                 </div>
                 <div class="film-details__info-wrap">
                   <div class="film-details__poster">
-                    <img class="film-details__poster-img" src="./images/posters/${this._poster}" alt="incredables-2">
+                    <img class="film-details__poster-img" src="./${this._poster}" alt="${this._title}">
             
-                    <p class="film-details__age">18+</p>
+                    <p class="film-details__age">${this._ageRating}+</p>
                   </div>
             
                   <div class="film-details__info">
                     <div class="film-details__info-head">
                       <div class="film-details__title-wrap">
                         <h3 class="film-details__title">${this._title}</h3>
-                        <p class="film-details__title-original">Original: Невероятная семейка</p>
+                        <p class="film-details__title-original">Original: ${this._alternativeTitle}</p>
                       </div>
             
                       <div class="film-details__rating">
@@ -185,23 +215,23 @@ export default class FilmPopup extends Component {
                     <table class="film-details__table">
                       <tr class="film-details__row">
                         <td class="film-details__term">Director</td>
-                        <td class="film-details__cell">Brad Bird</td>
+                        <td class="film-details__cell">${this._director}</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Writers</td>
-                        <td class="film-details__cell">Brad Bird</td>
+                        <td class="film-details__cell">${this._writers.join(`,`)}</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Actors</td>
-                        <td class="film-details__cell">Samuel L. Jackson, Catherine Keener, Sophia Bush</td>
-                      </tr>
-                      <tr class="film-details__row">
-                        <td class="film-details__term">Release Date</td>
-                        <td class="film-details__cell">${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})</td>
+                        <td class="film-details__cell">${this._actors.join(`,`)}</td>
+                        </tr>
+                        <tr class="film-details__row">
+                          <td class="film-details__term">Release Date</td>
+                          <td class="film-details__cell">${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Runtime</td>
-                        <td class="film-details__cell">${moment().startOf(`day`).add(this._duration * 60 * 1000).format(`h:mm`)}</td>
+                        <td class="film-details__cell">${this._duration} min</td>
                         </tr>
                         <tr class="film-details__row">
                           <td class="film-details__term">Country</td>
@@ -210,9 +240,7 @@ export default class FilmPopup extends Component {
                       <tr class="film-details__row">
                         <td class="film-details__term">Genres</td>
                         <td class="film-details__cell">
-                          <span class="film-details__genre">Animation</span>
-                          <span class="film-details__genre">Action</span>
-                          <span class="film-details__genre">Adventure</span></td>
+                          ${this._genre.map((obj, i, arr) => `<span class="film-details__genre">${obj}${i !== arr.length - 1 ? `,` : ``}</span>`).join(``).slice(0, -1)}
                       </tr>
                     </table>
             
