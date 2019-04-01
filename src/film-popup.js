@@ -8,25 +8,25 @@ export default class FilmPopup extends Component {
   constructor(data) {
     super();
 
-    this._title = data.filimInfo.title;
-    this._poster = data.filimInfo.poster;
-    this._description = data.filimInfo.description;
-    this._alternativeTitle = data.filimInfo.alternativeTitle;
+    this._title = data.filmInfo.title;
+    this._poster = data.filmInfo.poster;
+    this._description = data.filmInfo.description;
+    this._alternativeTitle = data.filmInfo.alternativeTitle;
 
-    this._dateRelease = data.filimInfo.release.date; // год правильно поставить
-    this._duration = data.filimInfo.runtime;
-    this._director = data.filimInfo.director;
-    this._writers = data.filimInfo.writers.slice();
-    this._actors = data.filimInfo.actors.slice();
+    this._dateRelease = data.filmInfo.release.date; // год правильно поставить
+    this._duration = data.filmInfo.runtime;
+    this._director = data.filmInfo.director;
+    this._writers = data.filmInfo.writers.slice();
+    this._actors = data.filmInfo.actors.slice();
 
 
-    this._genre = data.filimInfo.genre.slice();
+    this._genre = data.filmInfo.genre.slice();
     this._comments = data.comments.slice();
-    this._ageRating = data.filimInfo.ageRating;
-    this._rating = data.filimInfo.totalRating;
-    this._userRating = parseInt(data.userDetails.personalRating, 10);
-    this._country = data.filimInfo.release.releaseCountry;
+    this._ageRating = data.filmInfo.ageRating;
+    this._rating = data.filmInfo.totalRating;
+    this._country = data.filmInfo.release.releaseCountry;
 
+    this._userRating = parseInt(data.userDetails.personalRating, 10);
     this._isAddWatchlist = data.userDetails.watchlist;
     this._isMarkWatchlist = data.userDetails.alreadyWatched;
     this._isAddFavorite = data.userDetails.favorite;
@@ -41,10 +41,12 @@ export default class FilmPopup extends Component {
   _processForm(formData) {
     const entry = {
       comments: [],
-      userRating: 0,
-      isAddWatchlist: false,
-      isMarkWatchlist: false,
-      isAddFavorite: false,
+      userDetails: {
+        watchlist: false,
+        alreadyWatched: false,
+        favorite: false,
+        userRating: 0,
+      }
     };
 
     const filmEditMapper = FilmPopup.createMapper(entry);
@@ -62,20 +64,20 @@ export default class FilmPopup extends Component {
   static createMapper(target) {
     return {
       score: (value) => {
-        target.userRating = Number(value);
-        return target.userRating;
+        target.userDetails.userRating = Number(value);
+        return target.userDetails.userRating;
       },
       watchlist: (value) => {
-        target.isAddWatchlist = Boolean(value);
-        return target.isAddWatchlist;
+        target.userDetails.watchlist = Boolean(value);
+        return target.userDetails.watchlist;
       },
       watched: (value) => {
-        target.isMarkWatchlist = Boolean(value);
-        return target.isMarkWatchlist;
+        target.userDetails.alreadyWatched = Boolean(value);
+        return target.userDetails.alreadyWatched;
       },
       favorite: (value) => {
-        target.isAddFavorite = Boolean(value);
-        return target.isAddFavorite;
+        target.userDetails.favorite = Boolean(value);
+        return target.userDetails.favorite;
       },
     };
   }
@@ -367,10 +369,10 @@ export default class FilmPopup extends Component {
   }
 
   update(data) {
-    this._comments = data.comments;
-    this._userRating = data.userRating;
-    this._isAddWatchlist = data.isAddWatchlist;
-    this._isMarkWatchlist = data.isMarkWatchlist;
-    this._isAddFavorite = data.isAddFavorite;
+    this._comments = data.comments.slice();
+    this._userRating = parseInt(data.userDetails.personalRating, 10);
+    this._isAddWatchlist = data.userDetails.watchlist;
+    this._isMarkWatchlist = data.userDetails.alreadyWatched;
+    this._isAddFavorite = data.userDetails.favorite;
   }
 }

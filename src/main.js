@@ -12,6 +12,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 const BAR_HEIGHT = 50;
 const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/moowle/`;
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const MAX_FILMS = 5;
 let pageIndex = 1;
 
@@ -22,32 +23,44 @@ const renderFilters = (data, mainNavigationElement, filmListElement, showMoreEle
     const filterComponent = new Filter(title, title === `All`);
     filterComponent.onClick = () => {
       hideStatictic();
-      showPrevFilms(getFilterFilmsData(data), filmListElement, showMoreElement);
+      document.querySelector(`.search__field`).value = ``;
+      showFirstFilms(getFilterFilmsData(data), filmListElement, showMoreElement);
     };
     fragment.appendChild(filterComponent.render());
   });
   mainNavigationElement.prepend(fragment);
 };
 
-const updateFilm = (data, oldFilm, newFilm) => {
-  const i = data.indexOf(oldFilm);
-  data[i] = Object.assign({}, data[i], newFilm);
+const updateFilm = (data, oldObj, newObj) => {
+  const i = data.indexOf(oldObj);
+  data[i].userDetails = newObj.userDetails;
+  data[i].comments = newObj.comments;
+  //data[i] = Object.assign({}, data[i], newFilm);
+  //data[i] = newFilm;
   return data[i];
 };
 
-const getFilterFilmsData = (data, title = ``) => {
+const getFilterFilmsData = (data, title = ``, findValue = ``) => {
   if (!title) {
     title = document.querySelector(`.main-navigation__item--active`).textContent.trim();
   }
   switch (title) {
     case `Watchlist`:
-      return data.filter((it) => it.isAddWatchlist);
+      return data.filter((it) => it.userDetails.watchlist);
     case `History`:
-      return data.filter((it) => it.isMarkWatchlist);
+      return data.filter((it) => it.userDetails.alreadyWatched);
     case `Favorites`:
-      return data.filter((it) => it.isAddFavorite);
+      return data.filter((it) => it.userDetails.favorite);
   }
-  return data;
+  if (!findValue) {
+    findValue = document.querySelector(`.search__field`).value;
+  }
+  return findValue ? data.filter((it) => it.filmInfo.title.indexOf(findValue) > -1) : data;
+};
+
+const setDefaultMenuItem = () => {
+  document.querySelector(`.main-navigation__item--active`).classList.remove(`main-navigation__item--active`);
+  document.querySelector(`.main-navigation__item`).classList.add(`main-navigation__item--active`);
 };
 
 const renderFilms = (data, filmListElement, param) => {
@@ -55,7 +68,7 @@ const renderFilms = (data, filmListElement, param) => {
   const fragment = document.createDocumentFragment();
   removeChildElements(filmListElement);
   data.forEach((filmObj, i) => {
-    if (i >= pageIndex - 1 * MAX_FILMS && i < pageIndex * MAX_FILMS) {
+    if (i < pageIndex * MAX_FILMS) {
       const filmComponent = new Film(filmObj, param);
       const filmPopupComponent = new FilmPopup(filmObj);
 
@@ -77,11 +90,36 @@ const renderFilms = (data, filmListElement, param) => {
       };
 
       filmPopupComponent.onSave = (newObj) => {
-        const updatedFilmObj = updateFilm(data, filmObj, newObj);
-        filmComponent.update(updatedFilmObj);
-        filmComponent.refresh();
-        bodyElement.removeChild(filmPopupComponent.element);
-        filmPopupComponent.unrender();
+        //console.log(newObj);
+        //const updatedFilmObj = updateFilm(data, filmObj, newObj);
+        //console.log(updatedFilmObj);
+        //console.log(filmObj);
+        //console.log(updatedFilmObj);
+        //console.log(updatedFilmObj);
+
+        //console.log(filmObj);
+
+        //console.log(filmObj);
+
+        filmObj = updateFilm(data, filmObj, newObj);
+        api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
+          .then((newObj1) => {
+            filmComponent.update(newObj1);
+            filmComponent.refresh();
+            bodyElement.removeChild(filmPopupComponent.element);
+            filmPopupComponent.unrender();
+
+            //console.log(newObj1);
+
+
+            /*taskComponent.update(newTask);
+            taskComponent.render();
+            tasksContainer.replaceChild(taskComponent.element, editTaskComponent.element);
+            editTaskComponent.unrender();*/
+
+          });
+
+
       };
       fragment.appendChild(filmComponent.render());
     }
@@ -203,8 +241,7 @@ const renderStatistic = (filmsData) => {
 
 const showNextFilms = (filmsData, filmListElement, showMoreElement) => {
   renderFilms(filmsData, filmListElement, {isControls: true});
-  const maxPageIndex = filmsData.length / MAX_FILMS;
-  if (pageIndex < maxPageIndex) {
+  if (pageIndex < filmsData.length / MAX_FILMS) {
     pageIndex++;
     showMoreElement.classList.remove(`visually-hidden`);
   } else {
@@ -212,15 +249,13 @@ const showNextFilms = (filmsData, filmListElement, showMoreElement) => {
   }
 };
 
-const showPrevFilms = (filmsData, filmListElement, showMoreElement) => {
+const showFirstFilms = (filmsData, filmListElement, showMoreElement) => {
   pageIndex = 1;
   showNextFilms(filmsData, filmListElement, showMoreElement);
 };
 
 
 const main = () => {
-  const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
-
   const mainNavigationElement = document.querySelector(`.main-navigation`);
   const filmListElement = document.querySelector(`.films-list .films-list__container`);
   const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
@@ -231,9 +266,9 @@ const main = () => {
   api.getFilms().then((films) => {
     filmsData = films;
     renderFilters(filmsData, mainNavigationElement, filmListElement, showMoreElement);
-    showPrevFilms(filmsData, filmListElement, showMoreElement);
     renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
     renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
+    showFirstFilms(filmsData, filmListElement, showMoreElement);
   });
 
 
@@ -246,6 +281,14 @@ const main = () => {
   showMoreElement.addEventListener(`click`, () => {
     showNextFilms(getFilterFilmsData(filmsData), filmListElement, showMoreElement);
   });
+
+  const searchElement = document.querySelector(`.search__field`);
+  searchElement.addEventListener(`input`, (evt) => {
+    evt.preventDefault();
+    setDefaultMenuItem();
+    showFirstFilms(getFilterFilmsData(filmsData, ``, evt.target.value), filmListElement, showMoreElement);
+  });
+
   hideStatictic();
 };
 

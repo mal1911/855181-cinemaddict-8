@@ -5,14 +5,14 @@ import moment from 'moment';
 export default class extends Component {
   constructor(data, param) {
     super();
-    this._title = data.filimInfo.title;
-    this._poster = data.filimInfo.poster;
-    this._description = data.filimInfo.description;
-    this._dateRelease = data.filimInfo.release.date; // год правильно поставить
-    this._duration = data.filimInfo.runtime;
-    this._genre = data.filimInfo.genre.slice();
+    this._title = data.filmInfo.title;
+    this._poster = data.filmInfo.poster;
+    this._description = data.filmInfo.description;
+    this._dateRelease = data.filmInfo.release.date; // год правильно поставить
+    this._duration = data.filmInfo.runtime;
+    this._genre = data.filmInfo.genre.slice();
     this._comments = data.comments.slice();
-    this._rating = data.filimInfo.totalRating;
+    this._rating = data.filmInfo.totalRating;
     this._userRating = data.userDetails.personalRating;
 
     this._isAddWatchlist = data.userDetails.watchlist;
@@ -154,10 +154,10 @@ export default class extends Component {
   }
 
   update(data) {
-    this._comments = data.comments;
-    this._userRating = data.userRating;
-    this._isAddWatchlist = data.isAddWatchlist;
-    this._isMarkWatchlist = data.isMarkWatchlist;
-    this._isAddFavorite = data.isAddFavorite;
+    this._comments = data.comments.slice();
+    this._userRating = parseInt(data.userDetails.personalRating, 10);
+    this._isAddWatchlist = data.userDetails.watchlist;
+    this._isMarkWatchlist = data.userDetails.alreadyWatched;
+    this._isAddFavorite = data.userDetails.favorite;
   }
 }

@@ -1,9 +1,9 @@
 export default class FilmModel {
   constructor(data) {
-    console.log(data);
+    //console.log(data);
 
     this.id = data.id;
-    this.filimInfo = {
+    this.filmInfo = {
       title: data.film_info.title,
       alternativeTitle: data.film_info.alternative_title,
       totalRating: data.film_info.total_rating,
@@ -50,21 +50,21 @@ export default class FilmModel {
     return {
       'id': this.id,
       'filim_info': {
-        'title': this.filimInfo.title,
-        'alternative_title': this.filimInfo.alternativeTitle,
-        'total_rating': this.filimInfo.totalRating,
-        'poster': this.filimInfo.poster,
-        'age_rating': this.filimInfo.ageRating,
-        'director': this.filimInfo.director,
-        'writers': this.filimInfo.writers.slice(),
-        'actors': this.filimInfo.actors.slice(),
+        'title': this.filmInfo.title,
+        'alternative_title': this.filmInfo.alternativeTitle,
+        'total_rating': this.filmInfo.totalRating,
+        'poster': this.filmInfo.poster,
+        'age_rating': this.filmInfo.ageRating,
+        'director': this.filmInfo.director,
+        'writers': this.filmInfo.writers.slice(),
+        'actors': this.filmInfo.actors.slice(),
         'release': {
-          'date': this.filimInfo.release.date,
-          'release_country': this.filimInfo.release.releaseCountry,
+          'date': this.filmInfo.release.date,
+          'release_country': this.filmInfo.release.releaseCountry,
         },
-        'runtime': this.filimInfo.runtime,
-        'genre': this.filimInfo.genre.slice(),
-        'description': this.filimInfo.description,
+        'runtime': this.filmInfo.runtime,
+        'genre': this.filmInfo.genre.slice(),
+        'description': this.filmInfo.description,
       },
       'user_details': {
         'personal_rating': this.userDetails.personalRating,
