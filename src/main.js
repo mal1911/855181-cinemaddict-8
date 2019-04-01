@@ -31,20 +31,23 @@ const renderFilters = (data, mainNavigationElement, filmListElement, showMoreEle
   mainNavigationElement.prepend(fragment);
 };
 
-const updateFilm = (data, oldObj, newObj) => {
+const updateFilmData = (data, oldObj, newObj) => {
   const i = data.indexOf(oldObj);
   data[i].userDetails = newObj.userDetails;
   data[i].comments = newObj.comments;
-  //data[i] = Object.assign({}, data[i], newFilm);
-  //data[i] = newFilm;
   return data[i];
 };
 
-const getFilterFilmsData = (data, title = ``, findValue = ``) => {
-  if (!title) {
-    title = document.querySelector(`.main-navigation__item--active`).textContent.trim();
+
+const getActiveFilter = () =>
+  document.querySelector(`.main-navigation__item--active`).textContent.trim();
+
+const getFilterFilmsData = (data, filter = ``, findValue = ``) => {
+  if (!filter) {
+    filter = getActiveFilter();
   }
-  switch (title) {
+
+  switch (filter) {
     case `Watchlist`:
       return data.filter((it) => it.userDetails.watchlist);
     case `History`:
@@ -63,6 +66,19 @@ const setDefaultMenuItem = () => {
   document.querySelector(`.main-navigation__item`).classList.add(`main-navigation__item--active`);
 };
 
+const isVisibleFilm = (filmObj) => {
+  const filter = getActiveFilter();
+  switch (filter) {
+    case `Watchlist`:
+      return filmObj.userDetails.watchlist;
+    case `History`:
+      return filmObj.userDetails.alreadyWatched;
+    case `Favorites`:
+      return filmObj.userDetails.favorite;
+  }
+  return true;
+};
+
 const renderFilms = (data, filmListElement, param) => {
   const bodyElement = document.querySelector(`body`);
   const fragment = document.createDocumentFragment();
@@ -78,7 +94,14 @@ const renderFilms = (data, filmListElement, param) => {
       };
 
       filmComponent.onAddWatchlist = (value) => {
-        filmPopupComponent.changeAddWatchlist(value);
+        filmObj.userDetails.watchlist = value;
+        api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
+          .then((newObj1) => {
+            filmPopupComponent.changeAddWatchlist(newObj1.userDetails.watchlist);
+            if (!isVisibleFilm(newObj1)) {
+              filmListElement.removeChild(filmComponent.element);
+            }
+          });
       };
 
       filmComponent.onMarkWatchlist = (value) => {
@@ -96,12 +119,10 @@ const renderFilms = (data, filmListElement, param) => {
         //console.log(filmObj);
         //console.log(updatedFilmObj);
         //console.log(updatedFilmObj);
-
+        //console.log(filmObj);
         //console.log(filmObj);
 
-        //console.log(filmObj);
-
-        filmObj = updateFilm(data, filmObj, newObj);
+        filmObj = updateFilmData(data, filmObj, newObj);
         api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
           .then((newObj1) => {
             filmComponent.update(newObj1);
@@ -261,6 +282,7 @@ const main = () => {
   const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
   const showMoreElement = document.querySelector(`.films-list__show-more`);
 
+  document.querySelector(`.popup-message--load`).style.display = `flex`;
 
   let filmsData = [];// = getDataFromObj(MAX_FILMS, getFilmObj);
   api.getFilms().then((films) => {
@@ -269,6 +291,7 @@ const main = () => {
     renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
     renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
     showFirstFilms(filmsData, filmListElement, showMoreElement);
+    document.querySelector(`.popup-message--load`).style.display = `none`;
   });
 
 
