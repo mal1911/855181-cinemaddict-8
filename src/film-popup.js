@@ -7,35 +7,28 @@ const ENTER_KEY = 13;
 export default class FilmPopup extends Component {
   constructor(data) {
     super();
-
     this._title = data.filmInfo.title;
     this._poster = data.filmInfo.poster;
     this._description = data.filmInfo.description;
     this._alternativeTitle = data.filmInfo.alternativeTitle;
-
-    this._dateRelease = data.filmInfo.release.date; // год правильно поставить
+    this._dateRelease = data.filmInfo.release.date;
     this._duration = data.filmInfo.runtime;
     this._director = data.filmInfo.director;
     this._writers = data.filmInfo.writers.slice();
     this._actors = data.filmInfo.actors.slice();
-
-
     this._genre = data.filmInfo.genre.slice();
-    this._comments = data.comments.slice();
     this._ageRating = data.filmInfo.ageRating;
     this._rating = data.filmInfo.totalRating;
     this._country = data.filmInfo.release.releaseCountry;
 
-    this._userRating = parseInt(data.userDetails.personalRating, 10);
-    this._isAddWatchlist = data.userDetails.watchlist;
-    this._isMarkWatchlist = data.userDetails.alreadyWatched;
-    this._isAddFavorite = data.userDetails.favorite;
+    this.update(data);
 
     this._onSave = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
     this._onAddComments = this._onAddComments.bind(this);
     this._onChangeUserRating = this._onChangeUserRating.bind(this);
     this._onEmojiClick = this._onEmojiClick.bind(this);
+    this._onDeleteLastCommentClick = this._onDeleteLastCommentClick.bind(this);
   }
 
   _processForm(formData) {
@@ -45,8 +38,8 @@ export default class FilmPopup extends Component {
         watchlist: false,
         alreadyWatched: false,
         favorite: false,
-        userRating: 0,
-      }
+        personalRating: 0,
+      },
     };
 
     const filmEditMapper = FilmPopup.createMapper(entry);
@@ -57,15 +50,22 @@ export default class FilmPopup extends Component {
         filmEditMapper[property](value);
       }
     }
-    entry.comments = this._comments;
+    entry.comments = this._comments.map((obj) => {
+      return {
+        emotion: obj.emotion,
+        comment: obj.comment,
+        author: obj.author,
+        date: obj.date,
+      };
+    });
     return entry;
   }
 
   static createMapper(target) {
     return {
       score: (value) => {
-        target.userDetails.userRating = Number(value);
-        return target.userDetails.userRating;
+        target.userDetails.personalRating = Number(value);
+        return target.userDetails.personalRating;
       },
       watchlist: (value) => {
         target.userDetails.watchlist = Boolean(value);
@@ -100,16 +100,20 @@ export default class FilmPopup extends Component {
     this.update(newData);
   }
 
-  changeAddWatchlist(value) {
-    this._isAddWatchlist = value;
+  changeUserDetails(obj) {
+    this._userDetails = Object.assign({}, obj);
   }
 
-  changeMarkWatchlist(value) {
-    this._isMarkWatchlist = value;
+  block() {
+    if (this._element) {
+      this._element.querySelector(`.film-details__inner`).disabled = true;
+    }
   }
 
-  changeAddFavorite(value) {
-    this._isAddFavorite = value;
+  unblock() {
+    if (this._element) {
+      this._element.querySelector(`.film-details__inner`).disabled = false;
+    }
   }
 
   _onAddComments(evt) {
@@ -134,10 +138,19 @@ export default class FilmPopup extends Component {
           comment,
           author: ``,
           date: new Date(),
+          updated: true,
         });
         element.value = ``;
         this._refreshComments();
       }
+    }
+  }
+
+  _onDeleteLastCommentClick() {
+    const lastCommentObj = this._comments[this._comments.length - 1];
+    if (lastCommentObj.updated) {
+      this._comments.pop();
+      this._refreshComments();
     }
   }
 
@@ -210,7 +223,7 @@ export default class FilmPopup extends Component {
             
                       <div class="film-details__rating">
                         <p class="film-details__total-rating">${this._rating}</p>
-                        <p class="film-details__user-rating">Your rate ${this._userRating}</p>
+                        <p class="film-details__user-rating">Your rate ${this._userDetails.personalRating}</p>
                       </div>
                     </div>
             
@@ -253,13 +266,13 @@ export default class FilmPopup extends Component {
                 </div>
             
                 <section class="film-details__controls">
-                  <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist" ${this._isAddWatchlist && ` checked`}>
+                  <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist" ${this._userDetails.watchlist && ` checked`}>
                     <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
               
-                    <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" ${this._isMarkWatchlist && ` checked`}>
+                    <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" ${this._userDetails.alreadyWatched && ` checked`}>
                       <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
                 
-                      <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite" ${this._isAddFavorite && ` checked`}>
+                      <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite" ${this._userDetails.favorite && ` checked`}>
                         <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
                       </section>
                   
@@ -309,31 +322,31 @@ export default class FilmPopup extends Component {
                       <p class="film-details__user-rating-feelings">How you feel it?</p>
             
                       <div class="film-details__user-rating-score">
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1" ${this._userRating === 1 && ` checked`}>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1" ${this._userDetails.personalRating === 1 && ` checked`}>
                           <label class="film-details__user-rating-label" for="rating-1">1</label>
               
-                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userRating === 2 && ` checked`}>
+                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userDetails.personalRating === 2 && ` checked`}>
                             <label class="film-details__user-rating-label" for="rating-2">2</label>
                 
-                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userRating === 3 && ` checked`}>
+                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userDetails.personalRating === 3 && ` checked`}>
                               <label class="film-details__user-rating-label" for="rating-3">3</label>
                   
-                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userRating === 4 && ` checked`}>
+                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userDetails.personalRating === 4 && ` checked`}>
                                 <label class="film-details__user-rating-label" for="rating-4">4</label>
                     
-                                <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userRating === 5 && ` checked`}>
+                                <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userDetails.personalRating === 5 && ` checked`}>
                         <label class="film-details__user-rating-label" for="rating-5">5</label>
             
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6" ${this._userRating === 6 && ` checked`}>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6" ${this._userDetails.personalRating === 6 && ` checked`}>
                           <label class="film-details__user-rating-label" for="rating-6">6</label>
               
-                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userRating === 7 && ` checked`}>
+                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userDetails.personalRating === 7 && ` checked`}>
                             <label class="film-details__user-rating-label" for="rating-7">7</label>
                 
-                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userRating === 8 && ` checked`}>
+                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userDetails.personalRating === 8 && ` checked`}>
                               <label class="film-details__user-rating-label" for="rating-8">8</label>
                   
-                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userRating === 9 && ` checked`}>
+                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userDetails.personalRating === 9 && ` checked`}>
                                 <label class="film-details__user-rating-label" for="rating-9">9</label>
                     
                               </div>
@@ -353,6 +366,8 @@ export default class FilmPopup extends Component {
       .addEventListener(`keydown`, this._onAddComments);
     this._element.querySelector(`.film-details__user-rating-score`)
       .addEventListener(`click`, this._onChangeUserRating);
+    this._element.querySelector(`.film-details__watched-reset`)
+      .addEventListener(`click`, this._onDeleteLastCommentClick);
   }
 
   unbind() {
@@ -360,19 +375,21 @@ export default class FilmPopup extends Component {
       .removeEventListener(`click`, this._onCloseButtonClick);
     this._element.querySelector(`.film-details__emoji-list`)
       .removeEventListener(`click`, this._onEmojiClick);
-
     this._element.querySelector(`.film-details__comment-input`)
       .removeEventListener(`keydown`, this._onAddComments);
-
     this._element.querySelector(`.film-details__user-rating-score`)
       .removeEventListener(`click`, this._onChangeUserRating);
+    this._element.querySelector(`.film-details__watched-reset`)
+      .removeEventListener(`click`, this._onDeleteLastCommentClick);
   }
 
   update(data) {
     this._comments = data.comments.slice();
-    this._userRating = parseInt(data.userDetails.personalRating, 10);
-    this._isAddWatchlist = data.userDetails.watchlist;
-    this._isMarkWatchlist = data.userDetails.alreadyWatched;
-    this._isAddFavorite = data.userDetails.favorite;
+    this._userDetails = {
+      personalRating: parseInt(data.userDetails.personalRating, 10),
+      watchlist: data.userDetails.watchlist,
+      alreadyWatched: data.userDetails.alreadyWatched,
+      favorite: data.userDetails.favorite,
+    };
   }
 }

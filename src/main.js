@@ -1,6 +1,8 @@
 import {FILTER_DATA} from "./constants";
+
 import {getDataFromObj, getRandomArray} from './utils.js';
 import getFilmObj from './film-obj.js';
+
 import Filter from './filter';
 import Film from './film';
 import FilmPopup from './film-popup';
@@ -94,37 +96,44 @@ const renderFilms = (data, filmListElement, param) => {
         bodyElement.append(filmPopupComponent.element);
       };
 
-      filmComponent.onAddWatchlist = (value) => {
-        filmObj.userDetails.watchlist = value;
+      filmComponent.onChangeStatus = (obj) => {
+        filmObj.userDetails = obj;
+        filmComponent.block();
         api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
           .then((newObj1) => {
-            filmPopupComponent.changeAddWatchlist(newObj1.userDetails.watchlist);
+            filmPopupComponent.changeUserDetails(newObj1.userDetails);
             if (!isVisibleFilm(newObj1)) {
-              filmListElement.removeChild(filmComponent.element);
+              filmComponent.unrender();
             }
-          });
-      };
-
-      filmComponent.onMarkWatchlist = (value) => {
-        filmPopupComponent.changeMarkWatchlist(value);
-      };
-
-      filmComponent.onAddFavorite = (value) => {
-        filmPopupComponent.changeAddFavorite(value);
+          }).catch((err) => {
+            const messageErrorComponent = new Message(`Error: ${err.message}`, {isError: true});
+            messageErrorComponent.render();
+            filmListElement.appendChild(messageErrorComponent.element);
+          }).finally(() => filmComponent.unblock());
       };
 
       filmPopupComponent.onSave = (newObj) => {
+        const formPopupElement = document.querySelector(`.film-details__inner`);
+        if (formPopupElement.classList.contains(`shake`)) {
+          formPopupElement.classList.remove(`shake`);
+        }
+        filmPopupComponent.block();
         filmObj = updateFilmData(data, filmObj, newObj);
+
         api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
           .then((newObj1) => {
-            filmComponent.update(newObj1);
-            filmComponent.refresh();
-            bodyElement.removeChild(filmPopupComponent.element);
+            if (isVisibleFilm(newObj1)) {
+              filmComponent.update(newObj1);
+              filmComponent.refresh();
+            } else {
+              filmComponent.unrender();
+            }
             filmPopupComponent.unrender();
           }).catch(() => {
-
-        });
+            formPopupElement.classList.add(`shake`);
+          }).finally(() => filmPopupComponent.unblock());
       };
+
       fragment.appendChild(filmComponent.render());
     }
   });

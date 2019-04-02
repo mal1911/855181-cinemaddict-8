@@ -4,7 +4,7 @@ const Method = {
   GET: `GET`,
   POST: `POST`,
   PUT: `PUT`,
-  DELETE: `DELETE`
+  DELETE: `DELETE`,
 };
 
 const checkStatus = (response) => {
@@ -37,26 +37,26 @@ export default class API {
       url: `movies`,
       method: Method.POST,
       body: JSON.stringify(film),
-      headers: new Headers({'Content-Type': `application/json`})
+      headers: new Headers({'Content-Type': `application/json`}),
     })
       .then(toJSON)
       .then(FilmModel.parseFilm)
       .catch((err) => {
-        alert(err);
+        throw err;
       });
   }
 
   updateFilm({id, data}) {
     return this._load({
-      url: `movies1/${id}`,
+      url: `movies/${id}`,
       method: Method.PUT,
       body: JSON.stringify(data),
-      headers: new Headers({'Content-Type': `application/json`})
+      headers: new Headers({'Content-Type': `application/json`}),
     })
       .then(toJSON)
       .then(FilmModel.parseFilm)
       .catch((err) => {
-          alert(err);
+        throw err;
       });
   }
 
@@ -70,8 +70,7 @@ export default class API {
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
       .catch((err) => {
-        console.error(`fetch error: ${err}`);
         throw err;
       });
   }
-};
+}

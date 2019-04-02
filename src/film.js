@@ -11,23 +11,17 @@ export default class extends Component {
     this._dateRelease = data.filmInfo.release.date; // год правильно поставить
     this._duration = data.filmInfo.runtime;
     this._genre = data.filmInfo.genre.slice();
-    this._comments = data.comments.slice();
     this._rating = data.filmInfo.totalRating;
-    this._userRating = data.userDetails.personalRating;
-
-    this._isAddWatchlist = data.userDetails.watchlist;
-    this._isMarkWatchlist = data.userDetails.alreadyWatched;
-    this._isAddFavorite = data.userDetails.favorite;
+    this.update(data);
 
     this._param = param;
 
     this._onComments = null;
+    this._onChangeStatus = null;
+
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
-    this._onAddWatchlist = null;
     this._onAddWatchlistButtonClick = this._onAddWatchlistButtonClick.bind(this);
-    this._onMarkWatchlist = null;
     this._onMarkWatchlistButtonClick = this._onMarkWatchlistButtonClick.bind(this);
-    this._onAddFavorite = null;
     this._onAddFavoriteButtonClick = this._onAddFavoriteButtonClick.bind(this);
   }
 
@@ -41,51 +35,43 @@ export default class extends Component {
     }
   }
 
-  _changeAddWatchlist() {
-    this._isAddWatchlist = !this._isAddWatchlist;
-  }
-
-  set onAddWatchlist(fn) {
-    this._onAddWatchlist = fn;
+  set onChangeStatus(fn) {
+    this._onChangeStatus = fn;
   }
 
   _onAddWatchlistButtonClick(evt) {
     evt.preventDefault();
     this._changeAddWatchlist();
-    if (typeof this._onAddWatchlist === `function`) {
-      this._onAddWatchlist(this._isAddWatchlist);
-    }
-  }
-
-  _changeMarkWatchlist() {
-    this._isMarkWatchlist = !this._isMarkWatchlist;
-  }
-
-  set onMarkWatchlist(fn) {
-    this._onMarkWatchlist = fn;
+    this._callChangeStatus();
   }
 
   _onMarkWatchlistButtonClick(evt) {
     evt.preventDefault();
     this._changeMarkWatchlist();
-    if (typeof this._onMarkWatchlist === `function`) {
-      this._onMarkWatchlist(this._isMarkWatchlist);
-    }
-  }
-
-  _changeAddFavorite() {
-    this._isAddFavorite = !this._isAddFavorite;
-  }
-
-  set onAddFavorite(fn) {
-    this._onAddFavorite = fn;
+    this._callChangeStatus();
   }
 
   _onAddFavoriteButtonClick(evt) {
     evt.preventDefault();
     this._changeAddFavorite();
-    if (typeof this._onAddFavorite === `function`) {
-      this._onAddFavorite(this._isAddFavorite);
+    this._callChangeStatus();
+  }
+
+  _changeAddWatchlist() {
+    this._userDetails.watchlist = !this._userDetails.watchlist;
+  }
+
+  _changeMarkWatchlist() {
+    this._userDetails.alreadyWatched = !this._userDetails.alreadyWatched;
+  }
+
+  _changeAddFavorite() {
+    this._userDetails.favorite = !this._userDetails.favorite;
+  }
+
+  _callChangeStatus() {
+    if (typeof this._onChangeStatus === `function`) {
+      this._onChangeStatus(Object.assign({}, this._userDetails));
     }
   }
 
@@ -123,6 +109,18 @@ export default class extends Component {
     this.bind();
   }
 
+  block() {
+    if (this._element) {
+      this._element.querySelector(`.film-card__controls`).disabled = true;
+    }
+  }
+
+  unblock() {
+    if (this._element) {
+      this._element.querySelector(`.film-card__controls`).disabled = false;
+    }
+  }
+
   _partialUpdate() {
     this._element.innerHTML = this.createElement(this.template).innerHTML;
   }
@@ -155,9 +153,11 @@ export default class extends Component {
 
   update(data) {
     this._comments = data.comments.slice();
-    this._userRating = parseInt(data.userDetails.personalRating, 10);
-    this._isAddWatchlist = data.userDetails.watchlist;
-    this._isMarkWatchlist = data.userDetails.alreadyWatched;
-    this._isAddFavorite = data.userDetails.favorite;
+    this._userDetails = {
+      personalRating: parseInt(data.userDetails.personalRating, 10),
+      watchlist: data.userDetails.watchlist,
+      alreadyWatched: data.userDetails.alreadyWatched,
+      favorite: data.userDetails.favorite,
+    };
   }
 }
