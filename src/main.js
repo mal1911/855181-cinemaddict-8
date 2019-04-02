@@ -4,6 +4,7 @@ import getFilmObj from './film-obj.js';
 import Filter from './filter';
 import Film from './film';
 import FilmPopup from './film-popup';
+import Message from './message';
 import API from './api';
 import {removeChildElements} from "./utils";
 import Chart from 'chart.js';
@@ -113,15 +114,6 @@ const renderFilms = (data, filmListElement, param) => {
       };
 
       filmPopupComponent.onSave = (newObj) => {
-        //console.log(newObj);
-        //const updatedFilmObj = updateFilm(data, filmObj, newObj);
-        //console.log(updatedFilmObj);
-        //console.log(filmObj);
-        //console.log(updatedFilmObj);
-        //console.log(updatedFilmObj);
-        //console.log(filmObj);
-        //console.log(filmObj);
-
         filmObj = updateFilmData(data, filmObj, newObj);
         api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
           .then((newObj1) => {
@@ -129,18 +121,9 @@ const renderFilms = (data, filmListElement, param) => {
             filmComponent.refresh();
             bodyElement.removeChild(filmPopupComponent.element);
             filmPopupComponent.unrender();
+          }).catch(() => {
 
-            //console.log(newObj1);
-
-
-            /*taskComponent.update(newTask);
-            taskComponent.render();
-            tasksContainer.replaceChild(taskComponent.element, editTaskComponent.element);
-            editTaskComponent.unrender();*/
-
-          });
-
-
+        });
       };
       fragment.appendChild(filmComponent.render());
     }
@@ -282,7 +265,9 @@ const main = () => {
   const filmExtraElements = document.querySelectorAll(`.films-list--extra .films-list__container`);
   const showMoreElement = document.querySelector(`.films-list__show-more`);
 
-  document.querySelector(`.popup-message--load`).style.display = `flex`;
+  const messageLoadComponent = new Message(`Loading moovies…`, {isLoad: true});
+  messageLoadComponent.render();
+  filmListElement.appendChild(messageLoadComponent.element);
 
   let filmsData = [];// = getDataFromObj(MAX_FILMS, getFilmObj);
   api.getFilms().then((films) => {
@@ -291,7 +276,12 @@ const main = () => {
     renderFilms(getRandomArray(filmsData, 2), filmExtraElements[0]);
     renderFilms(getRandomArray(filmsData, 2), filmExtraElements[1]);
     showFirstFilms(filmsData, filmListElement, showMoreElement);
-    document.querySelector(`.popup-message--load`).style.display = `none`;
+  }).catch(() => {
+    const messageErrorComponent = new Message(`Check your connection or try again later.`, {isError: true});
+    messageErrorComponent.render();
+    filmListElement.appendChild(messageErrorComponent.element);
+  }).finally(() => {
+    messageLoadComponent.unrender();
   });
 
 

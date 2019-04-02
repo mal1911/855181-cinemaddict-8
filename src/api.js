@@ -40,18 +40,24 @@ export default class API {
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
-      .then(FilmModel.parseFilm);
+      .then(FilmModel.parseFilm)
+      .catch((err) => {
+        alert(err);
+      });
   }
 
   updateFilm({id, data}) {
     return this._load({
-      url: `movies/${id}`,
+      url: `movies1/${id}`,
       method: Method.PUT,
       body: JSON.stringify(data),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
-      .then(FilmModel.parseFilm);
+      .then(FilmModel.parseFilm)
+      .catch((err) => {
+          alert(err);
+      });
   }
 
   deleteFilm({id}) {

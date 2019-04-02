@@ -849,12 +849,23 @@ a:hover {
   top: 50%;
   left: 50%;
   z-index: 1;
-  display: none;
+  display: flex;
   color: black;
   background-color: aliceblue;
   transform: translate(-50%, -50%);
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
 
+.popup-message p {
+  text-align: center;
+}
+
+.popup-message--error {
+  width: 400px;
+  height: 100px;
+  background-color: red;
+  color: white;
+  border: 2px solid yellow;
 }
