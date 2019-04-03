@@ -1,8 +1,7 @@
+import {ENTER_KEYCODE, ESC_KEYCODE} from "./constants";
 import {getHTMLFromData} from './utils';
 import Component from './component';
 import moment from 'moment';
-
-const ENTER_KEY = 13;
 
 export default class FilmPopup extends Component {
   constructor(data) {
@@ -25,10 +24,12 @@ export default class FilmPopup extends Component {
 
     this._onSave = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
+    this._onEscPress = this._onEscPress.bind(this);
     this._onAddComments = this._onAddComments.bind(this);
     this._onChangeUserRating = this._onChangeUserRating.bind(this);
     this._onEmojiClick = this._onEmojiClick.bind(this);
     this._onDeleteLastCommentClick = this._onDeleteLastCommentClick.bind(this);
+    this._onControlsClick = this._onControlsClick.bind(this);
   }
 
   _processForm(formData) {
@@ -91,6 +92,12 @@ export default class FilmPopup extends Component {
     this._save();
   }
 
+  _onEscPress(evt) {
+    if (evt.keyCode === ESC_KEYCODE) {
+      this._save();
+    }
+  }
+
   _save() {
     const formData = new FormData(this._element.querySelector(`.film-details__inner`));
     const newData = this._processForm(formData);
@@ -128,7 +135,7 @@ export default class FilmPopup extends Component {
       }
       return ``;
     };
-    if (evt.ctrlKey && evt.keyCode === ENTER_KEY) {
+    if (evt.ctrlKey && evt.keyCode === ENTER_KEYCODE) {
       const element = evt.target;
       const emotion = getEmotion(this._element.querySelector(`.film-details__add-emoji-label`).textContent);
       const comment = element.value;
@@ -136,7 +143,7 @@ export default class FilmPopup extends Component {
         this._comments.push({
           emotion,
           comment,
-          author: ``,
+          author: `Alexey Malyshev`,
           date: new Date(),
           updated: true,
         });
@@ -147,17 +154,41 @@ export default class FilmPopup extends Component {
   }
 
   _onDeleteLastCommentClick() {
-    const lastCommentObj = this._comments[this._comments.length - 1];
-    if (lastCommentObj.updated) {
+    if (this._isLastCommentUpdated()) {
       this._comments.pop();
       this._refreshComments();
     }
+  }
+
+  _onControlsClick(evt) {
+    const title = evt.target.name;
+    if (title) {
+      switch (title) {
+        case `watched`: {
+          this._userDetails.alreadyWatched = !this._userDetails.alreadyWatched;
+          break;
+        }
+        case `watchlist`: {
+          this._userDetails.watchlist = !this._userDetails.watchlist;
+          break;
+        }
+        case `favorite`: {
+          this._userDetails.favorite = !this._userDetails.favorite;
+          break;
+        }
+      }
+    }
+    this._element.querySelector(`.film-details__watched-status`).textContent = this._getWatchedStatus(this._userDetails);
   }
 
   _onChangeUserRating(evt) {
     if (evt.target.tagName === `LABEL`) {
       this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${evt.target.textContent.trim()}`;
     }
+  }
+
+  _isLastCommentUpdated() {
+    return this._comments[this._comments.length - 1].updated;
   }
 
   _onEmojiClick(evt) {
@@ -178,13 +209,42 @@ export default class FilmPopup extends Component {
       }
       return ``;
     };
+    const getCommentDateDiff = (date) => {
+      const currDate = moment();
+
+      const years = currDate.diff(date, `years`);
+      if (years > 0) {
+        return `${years} years ago`;
+      }
+      const months = currDate.diff(date, `months`) % 12;
+      if (months > 0) {
+        return `${months} months ago`;
+      }
+      const days = currDate.diff(date, `days`);
+      if (days > 0) {
+        return `${days} days ago`;
+      }
+      const hour = currDate.diff(date, `hour`) % 24;
+      if (hour > 0) {
+        return `${hour} hour ago`;
+      }
+      const minutes = currDate.diff(date, `minutes`) % 60;
+      if (minutes > 0) {
+        return `${minutes} minutes ago`;
+      }
+      const seconds = currDate.diff(date, `seconds`) % 60;
+      if (seconds > 0) {
+        return `${seconds} seconds ago`;
+      }
+      return ``;
+    };
     return `<li class="film-details__comment">
               <span class="film-details__comment-emoji">${getEmotion(comment.emotion)}</span>
                 <div>
                   <p class="film-details__comment-text">${comment.comment}</p>
                   <p class="film-details__comment-info">
                     <span class="film-details__comment-author">${comment.author}</span>
-                    <span class="film-details__comment-day">${moment(comment.date).format(`DD.MM.YYYY`)}</span>
+                    <span class="film-details__comment-day">${getCommentDateDiff(comment.date)}</span>
                     </p>
                   </div>
                </li>`;
@@ -199,6 +259,22 @@ export default class FilmPopup extends Component {
     parentElement.innerHTML = this._comments.length;
     parentElement = this._element.querySelector(`.film-details__comments-list`);
     parentElement.innerHTML = this._getCommentsHTML();
+    const userRatindElement = this._element.querySelector(`.film-details__user-rating-controls`);
+    if (this._isLastCommentUpdated()) {
+      userRatindElement.classList.remove(`visually-hidden`);
+    } else {
+      userRatindElement.classList.add(`visually-hidden`);
+    }
+  }
+
+  _getWatchedStatus(userDetails) {
+    if (userDetails.alreadyWatched) {
+      return `Already watched`;
+    }
+    if (userDetails.watchlist) {
+      return `Will watch`;
+    }
+    return ``;
   }
 
   get template() {
@@ -306,8 +382,8 @@ export default class FilmPopup extends Component {
                 </section>
             
                 <section class="film-details__user-rating-wrap">
-                  <div class="film-details__user-rating-controls">
-                    <span class="film-details__watched-status film-details__watched-status--active">Already watched</span>
+                  <div class="film-details__user-rating-controls  visually-hidden">
+                    <span class="film-details__watched-status film-details__watched-status--active">${this._getWatchedStatus(this._userDetails)}</span>
                     <button class="film-details__watched-reset" type="button">undo</button>
                   </div>
             
@@ -360,6 +436,7 @@ export default class FilmPopup extends Component {
   bind() {
     this._element.querySelector(`.film-details__close-btn`)
       .addEventListener(`click`, this._onCloseButtonClick);
+    document.addEventListener(`keydown`, this._onEscPress);
     this._element.querySelector(`.film-details__emoji-list`)
       .addEventListener(`click`, this._onEmojiClick);
     this._element.querySelector(`.film-details__comment-input`)
@@ -368,11 +445,14 @@ export default class FilmPopup extends Component {
       .addEventListener(`click`, this._onChangeUserRating);
     this._element.querySelector(`.film-details__watched-reset`)
       .addEventListener(`click`, this._onDeleteLastCommentClick);
+    this._element.querySelector(`.film-details__controls`)
+      .addEventListener(`click`, this._onControlsClick);
   }
 
   unbind() {
     this._element.querySelector(`.film-details__close-btn`)
       .removeEventListener(`click`, this._onCloseButtonClick);
+    document.removeEventListener(`keydown`, this._onEscPress);
     this._element.querySelector(`.film-details__emoji-list`)
       .removeEventListener(`click`, this._onEmojiClick);
     this._element.querySelector(`.film-details__comment-input`)
@@ -381,6 +461,8 @@ export default class FilmPopup extends Component {
       .removeEventListener(`click`, this._onChangeUserRating);
     this._element.querySelector(`.film-details__watched-reset`)
       .removeEventListener(`click`, this._onDeleteLastCommentClick);
+    this._element.querySelector(`.film-details__controls`)
+      .removeEventListener(`click`, this._onControlsClick);
   }
 
   update(data) {

@@ -13,12 +13,9 @@ export default class extends Component {
     this._genre = data.filmInfo.genre.slice();
     this._rating = data.filmInfo.totalRating;
     this.update(data);
-
     this._param = param;
-
     this._onComments = null;
     this._onChangeStatus = null;
-
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
     this._onAddWatchlistButtonClick = this._onAddWatchlistButtonClick.bind(this);
     this._onMarkWatchlistButtonClick = this._onMarkWatchlistButtonClick.bind(this);
@@ -89,7 +86,7 @@ export default class extends Component {
 
   get template() {
     return `<article class="film-card ${this._isControls() ? `` : `film-card--no-controls`}">
-      <h3 class="film-card__title">${this._title}</h3>
+      <h3 class="film-card__title">${this._title.substring(0, 139)}</h3>
       <p class="film-card__rating">${this._rating}</p>
       <p class="film-card__info">
         <span class="film-card__year">${moment(this._dateRelease).format(`YYYY`)}</span>

@@ -1,6 +1,5 @@
+import {ESC_KEYCODE} from "./constants";
 import Component from './component';
-
-const ESC_KEYCODE = 27;
 
 export default class extends Component {
   constructor(text, param) {

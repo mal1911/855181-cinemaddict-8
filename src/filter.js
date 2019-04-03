@@ -25,8 +25,7 @@ export default class extends Component {
 
   get template() {
     return `<a href="#${this._title.toLowerCase()}" class="main-navigation__item ${this._isActive ? ` main-navigation__item--active` : ``}">
-              ${this._title}
-              ${this._count ? `<span class="main-navigation__item-count">${this._count}</span>` : ``} 
+              ${this._title} <span class="main-navigation__item-count"></span> 
             </a>`;
   }
 
