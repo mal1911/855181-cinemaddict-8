@@ -318,7 +318,7 @@ export default class FilmPopup extends Component {
                         </tr>
                         <tr class="film-details__row">
                           <td class="film-details__term">Release Date</td>
-                          <td class="film-details__cell">${moment(this._releaseDate).format(`DD MMMM YYYY`)} (${this._country})</td>
+                          <td class="film-details__cell">${moment(this._dateRelease).format(`DD MMMM YYYY`)} (${this._country})</td>
                       </tr>
                       <tr class="film-details__row">
                         <td class="film-details__term">Runtime</td>
