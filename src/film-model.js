@@ -33,7 +33,7 @@ export default class FilmModel {
   toRAW() {
     return {
       'id': this.id,
-      'filim_info': {
+      'film_info': {
         'title': this.filmInfo.title,
         'alternative_title': this.filmInfo.alternativeTitle,
         'total_rating': this.filmInfo.totalRating,

@@ -4,12 +4,19 @@ import Film from './film';
 import FilmPopup from './film-popup';
 import Message from './message';
 import API from './api';
+import Store from './store';
+import Provider from './provider';
+
 import {removeChildElements} from "./utils";
 import Statistics from "./statistics";
 
 const AUTHORIZATION = `Basic eo0w590ik29889a=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/moowle/`;
+const FILMS_STORE_KEY = `films-store-key`;
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+const store = new Store({key: FILMS_STORE_KEY, storage: localStorage});
+const provider = new Provider({api, store});
+
 const MAX_FILMS = 5;
 let pageIndex = 1;
 
@@ -93,7 +100,7 @@ const renderFilms = (data, fullData, filmListElement, param) => {
       filmComponent.onChangeStatus = (obj) => {
         filmObj.userDetails = obj;
         filmComponent.block();
-        api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
+        provider.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
           .then((newObj1) => {
             filmPopupComponent.changeUserDetails(newObj1.userDetails);
             if (!isVisibleFilm(newObj1)) {
@@ -115,7 +122,7 @@ const renderFilms = (data, fullData, filmListElement, param) => {
         filmPopupComponent.block();
         filmObj = updateFilmData(data, filmObj, newObj);
 
-        api.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
+        provider.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
           .then((newObj1) => {
             if (isVisibleFilm(newObj1)) {
               filmComponent.update(newObj1);
@@ -195,8 +202,16 @@ const main = () => {
   messageLoadComponent.render();
   filmListElement.appendChild(messageLoadComponent.element);
 
+  window.addEventListener(`offline`, () => {
+    document.title = `${document.title} [OFFLINE]`;
+  });
+  window.addEventListener(`online`, () => {
+    document.title = document.title.split(`[OFFLINE]`)[0];
+    provider.syncFilms();
+  });
+
   let filmsData = [];
-  api.getFilms().then((films) => {
+  provider.getFilms().then((films) => {
     filmsData = films;
     statisticsComponent.data = filmsData;
     renderFilters(filmsData, mainNavigationElement, filmListElement, showMoreElement, statisticsComponent);
