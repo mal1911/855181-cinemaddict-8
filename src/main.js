@@ -190,7 +190,7 @@ const main = () => {
   const mainNavigationElement = document.querySelector(`.main-navigation`);
   const filmListElement = document.querySelector(`.films-list .films-list__container`);
   const showMoreElement = document.querySelector(`.films-list__show-more`);
-  const statisticComponent = new Statistics();
+  const statisticsComponent = new Statistics();
   const messageLoadComponent = new Message(`Loading moovies…`, {isLoad: true});
   messageLoadComponent.render();
   filmListElement.appendChild(messageLoadComponent.element);
@@ -198,8 +198,8 @@ const main = () => {
   let filmsData = [];
   api.getFilms().then((films) => {
     filmsData = films;
-    statisticComponent.data = filmsData;
-    renderFilters(filmsData, mainNavigationElement, filmListElement, showMoreElement, statisticComponent);
+    statisticsComponent.data = filmsData;
+    renderFilters(filmsData, mainNavigationElement, filmListElement, showMoreElement, statisticsComponent);
     showFirstFilms(filmsData, filmsData, filmListElement, showMoreElement);
     showCounts(filmsData);
     showRatings(filmsData);
@@ -213,7 +213,7 @@ const main = () => {
     searchElement.addEventListener(`input`, (evt) => {
       evt.preventDefault();
       setDefaultMenuItem();
-      statisticComponent.hideStatictic();
+      statisticsComponent.hideStatictic();
       showFirstFilms(getFilterFilmsData(filmsData, ``, evt.target.value), filmsData, filmListElement, showMoreElement);
     });
   }).catch(() => {
@@ -222,7 +222,7 @@ const main = () => {
     filmListElement.appendChild(messageErrorComponent.element);
   }).finally(() => {
     messageLoadComponent.unrender();
-    statisticComponent.hideStatictic();
+    statisticsComponent.hideStatictic();
   });
 };
 

@@ -5,7 +5,6 @@ export default class Component {
     }
 
     this._element = null;
-    this._state = {};
   }
 
   get element() {

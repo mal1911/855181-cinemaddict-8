@@ -45,7 +45,6 @@ export default class Statistics {
       const filter = statisticElement.querySelector(`.statistic__filters-input:checked`).value;
       let dateBegin;
       let dateEnd;
-      //console.log(filter);
       switch (filter) {
         case `today`: {
           dateBegin = moment().startOf(`day`);
@@ -68,28 +67,6 @@ export default class Statistics {
           break;
         }
       }
-
-      /*
-      today statistics.js:47
-all-time statistics.js:47
-week statistics.js:47
-month statistics.js:47
-year
-      *
-      * moment().startOf('year');    // set to January 1st, 12:00 am this year
-moment().startOf('month');   // set to the first of this month, 12:00 am
-moment().startOf('quarter');  // set to the beginning of the current quarter, 1st day of months, 12:00 am
-moment().startOf('week');    // set to the first day of this week, 12:00 am
-moment().startOf('isoWeek'); // set to the first day of this week according to ISO 8601, 12:00 am
-moment().startOf('day');     // set to 12:00 am today
-moment().startOf('date');     // set to 12:00 am today
-moment().startOf('hour');    // set to now, but with 0 mins, 0 secs, and 0 ms
-moment().startOf('minute');  // set to now, but with 0 seconds and 0 milliseconds
-moment().startOf('second');  // same as moment().milliseconds(0);
-      *
-      * */
-
-
 
       const historyData = fullData.filter((it) => {
         const dateRelease = moment(it.filmInfo.release.date);
