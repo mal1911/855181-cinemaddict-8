@@ -15,7 +15,8 @@ export default class extends Component {
     this._onClick = fn;
   }
 
-  _onMenuClick() {
+  _onMenuClick(evt) {
+    evt.preventDefault();
     document.querySelector(`.main-navigation__item--active`).classList.remove(`main-navigation__item--active`);
     this._element.classList.add(`main-navigation__item--active`);
     if (typeof this._onClick === `function`) {
@@ -25,8 +26,7 @@ export default class extends Component {
 
   get template() {
     return `<a href="#${this._title.toLowerCase()}" class="main-navigation__item ${this._isActive ? ` main-navigation__item--active` : ``}">
-              ${this._title}
-              ${this._count ? `<span class="main-navigation__item-count">${this._count}</span>` : ``} 
+              ${this._title} ${this._title !== `All` ? `<span class="main-navigation__item-count"></span>` : ``} 
             </a>`;
   }
 

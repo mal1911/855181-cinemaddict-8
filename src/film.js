@@ -5,29 +5,20 @@ import moment from 'moment';
 export default class extends Component {
   constructor(data, param) {
     super();
-    this._title = data.title;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._year = data.year;
-    this._duration = data.duration;
-    this._genre = data.genre;
-    this._comments = data.comments;
-    this._rating = data.rating;
-    this._userRating = data.userRating;
-
-    this._isAddWatchlist = data.isAddWatchlist;
-    this._isMarkWatchlist = data.isMarkWatchlist;
-    this._isAddFavorite = data.isAddFavorite;
-
+    this._title = data.filmInfo.title;
+    this._poster = data.filmInfo.poster;
+    this._description = data.filmInfo.description;
+    this._dateRelease = data.filmInfo.release.date; // год правильно поставить
+    this._duration = data.filmInfo.runtime;
+    this._genre = data.filmInfo.genre.slice();
+    this._rating = data.filmInfo.totalRating;
+    this.update(data);
     this._param = param;
-
     this._onComments = null;
+    this._onChangeStatus = null;
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
-    this._onAddWatchlist = null;
     this._onAddWatchlistButtonClick = this._onAddWatchlistButtonClick.bind(this);
-    this._onMarkWatchlist = null;
     this._onMarkWatchlistButtonClick = this._onMarkWatchlistButtonClick.bind(this);
-    this._onAddFavorite = null;
     this._onAddFavoriteButtonClick = this._onAddFavoriteButtonClick.bind(this);
   }
 
@@ -41,51 +32,43 @@ export default class extends Component {
     }
   }
 
-  _changeAddWatchlist() {
-    this._isAddWatchlist = !this._isAddWatchlist;
-  }
-
-  set onAddWatchlist(fn) {
-    this._onAddWatchlist = fn;
+  set onChangeStatus(fn) {
+    this._onChangeStatus = fn;
   }
 
   _onAddWatchlistButtonClick(evt) {
     evt.preventDefault();
     this._changeAddWatchlist();
-    if (typeof this._onAddWatchlist === `function`) {
-      this._onAddWatchlist(this._isAddWatchlist);
-    }
-  }
-
-  _changeMarkWatchlist() {
-    this._isMarkWatchlist = !this._isMarkWatchlist;
-  }
-
-  set onMarkWatchlist(fn) {
-    this._onMarkWatchlist = fn;
+    this._callChangeStatus();
   }
 
   _onMarkWatchlistButtonClick(evt) {
     evt.preventDefault();
     this._changeMarkWatchlist();
-    if (typeof this._onMarkWatchlist === `function`) {
-      this._onMarkWatchlist(this._isMarkWatchlist);
-    }
-  }
-
-  _changeAddFavorite() {
-    this._isAddFavorite = !this._isAddFavorite;
-  }
-
-  set onAddFavorite(fn) {
-    this._onAddFavorite = fn;
+    this._callChangeStatus();
   }
 
   _onAddFavoriteButtonClick(evt) {
     evt.preventDefault();
     this._changeAddFavorite();
-    if (typeof this._onAddFavorite === `function`) {
-      this._onAddFavorite(this._isAddFavorite);
+    this._callChangeStatus();
+  }
+
+  _changeAddWatchlist() {
+    this._userDetails.watchlist = !this._userDetails.watchlist;
+  }
+
+  _changeMarkWatchlist() {
+    this._userDetails.alreadyWatched = !this._userDetails.alreadyWatched;
+  }
+
+  _changeAddFavorite() {
+    this._userDetails.favorite = !this._userDetails.favorite;
+  }
+
+  _callChangeStatus() {
+    if (typeof this._onChangeStatus === `function`) {
+      this._onChangeStatus(Object.assign({}, this._userDetails));
     }
   }
 
@@ -103,14 +86,14 @@ export default class extends Component {
 
   get template() {
     return `<article class="film-card ${this._isControls() ? `` : `film-card--no-controls`}">
-      <h3 class="film-card__title">${this._title}</h3>
+      <h3 class="film-card__title">${this._title.substring(0, 139)}</h3>
       <p class="film-card__rating">${this._rating}</p>
       <p class="film-card__info">
-        <span class="film-card__year">${moment(`${this._year}-01-01`).format(`YYYY`)}</span>
-        <span class="film-card__duration">${moment().startOf(`day`).add(this._duration * 60 * 1000).format(`h:mm`)}</span>
-          <span class="film-card__genre">${this._genre}</span>
-      </p>
-      <img src="./images/posters/${this._poster}" alt="" class="film-card__poster">
+        <span class="film-card__year">${moment(this._dateRelease).format(`YYYY`)}</span>
+        <span class="film-card__duration">${moment().startOf(`day`).add(this._duration * 60 * 1000).format(`hh:mm`)}</span>
+            <span class="film-card__genre">${this._genre.join(`, `)}</span>
+        </p>
+        <img src="./${this._poster}" alt="" class="film-card__poster">
       <p class="film-card__description">${this._description}</p>
      <button class="film-card__comments">${this._comments.length} comments</button>
       ${this._isControls() ? this._getControlsHTML() : ``}
@@ -121,6 +104,18 @@ export default class extends Component {
     this.unbind();
     this._partialUpdate();
     this.bind();
+  }
+
+  block() {
+    if (this._element) {
+      this._element.querySelector(`.film-card__controls`).disabled = true;
+    }
+  }
+
+  unblock() {
+    if (this._element) {
+      this._element.querySelector(`.film-card__controls`).disabled = false;
+    }
   }
 
   _partialUpdate() {
@@ -154,10 +149,12 @@ export default class extends Component {
   }
 
   update(data) {
-    this._comments = data.comments;
-    this._userRating = data.userRating;
-    this._isAddWatchlist = data.isAddWatchlist;
-    this._isMarkWatchlist = data.isMarkWatchlist;
-    this._isAddFavorite = data.isAddFavorite;
+    this._comments = data.comments.slice();
+    this._userDetails = {
+      personalRating: parseInt(data.userDetails.personalRating, 10),
+      watchlist: data.userDetails.watchlist,
+      alreadyWatched: data.userDetails.alreadyWatched,
+      favorite: data.userDetails.favorite,
+    };
   }
 }
