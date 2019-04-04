@@ -389,48 +389,51 @@ export default class FilmPopup extends Component {
             
                   <div class="film-details__user-score">
                     <div class="film-details__user-rating-poster">
-                      <img src="./images/posters/${this._poster}" alt="film-poster" class="film-details__user-rating-img">
+                      <img src="./${this._poster}" alt="film-poster" class="film-details__user-rating-img">
                     </div>
             
                     <section class="film-details__user-rating-inner">
-                      <h3 class="film-details__user-rating-title">Incredibles 2</h3>
+                      <h3 class="film-details__user-rating-title">${this._title}</h3>
             
                       <p class="film-details__user-rating-feelings">How you feel it?</p>
             
                       <div class="film-details__user-rating-score">
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="0" id="rating-0" ${this._userDetails.personalRating === 0 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-0">0</label>
+    
                         <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1" ${this._userDetails.personalRating === 1 && ` checked`}>
-                          <label class="film-details__user-rating-label" for="rating-1">1</label>
+                        <label class="film-details__user-rating-label" for="rating-1">1</label>
               
-                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userDetails.personalRating === 2 && ` checked`}>
-                            <label class="film-details__user-rating-label" for="rating-2">2</label>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userDetails.personalRating === 2 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-2">2</label>
                 
-                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userDetails.personalRating === 3 && ` checked`}>
-                              <label class="film-details__user-rating-label" for="rating-3">3</label>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userDetails.personalRating === 3 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-3">3</label>
                   
-                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userDetails.personalRating === 4 && ` checked`}>
-                                <label class="film-details__user-rating-label" for="rating-4">4</label>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userDetails.personalRating === 4 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-4">4</label>
                     
-                                <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userDetails.personalRating === 5 && ` checked`}>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userDetails.personalRating === 5 && ` checked`}>
                         <label class="film-details__user-rating-label" for="rating-5">5</label>
             
                         <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6" ${this._userDetails.personalRating === 6 && ` checked`}>
-                          <label class="film-details__user-rating-label" for="rating-6">6</label>
+                        <label class="film-details__user-rating-label" for="rating-6">6</label>
               
-                          <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userDetails.personalRating === 7 && ` checked`}>
-                            <label class="film-details__user-rating-label" for="rating-7">7</label>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userDetails.personalRating === 7 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-7">7</label>
                 
-                            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userDetails.personalRating === 8 && ` checked`}>
-                              <label class="film-details__user-rating-label" for="rating-8">8</label>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userDetails.personalRating === 8 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-8">8</label>
                   
-                              <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userDetails.personalRating === 9 && ` checked`}>
-                                <label class="film-details__user-rating-label" for="rating-9">9</label>
+                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userDetails.personalRating === 9 && ` checked`}>
+                        <label class="film-details__user-rating-label" for="rating-9">9</label>
                     
-                              </div>
-                            </section>
-                          </div>
-                        </section>
-                      </form>
-                    </section>`;
+                      </div>
+                    </section>
+                  </div>
+                </section>
+              </form>
+           </section>`;
   }
 
   bind() {
