@@ -25,6 +25,17 @@ export default class API {
     this._authorization = authorization;
   }
 
+  syncFilms({films}) {
+    return this._load({
+      url: `movies/sync`,
+      method: `POST`,
+      body: JSON.stringify(films),
+      headers: new Headers({'Content-Type': `application/json`})
+    })
+      .then(toJSON);
+  }
+
+
   getFilms() {
     return this._load({url: `movies`})
       .then(toJSON)
