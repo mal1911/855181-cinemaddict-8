@@ -7,20 +7,25 @@ export default class extends Component {
     this._isActive = isActive;
     this._count = 0;
 
-    this._onClick = null;
-    this._onMenuClick = this._onMenuClick.bind(this);
+    this._onFilterClick = null;
+    this._onClick = this._onClick.bind(this);
   }
 
-  set onClick(fn) {
-    this._onClick = fn;
+  set onFilterClick(fn) {
+    this._onFilterClick = fn;
   }
 
-  _onMenuClick(evt) {
+  _onClick(evt) {
     evt.preventDefault();
     document.querySelector(`.main-navigation__item--active`).classList.remove(`main-navigation__item--active`);
     this._element.classList.add(`main-navigation__item--active`);
-    if (typeof this._onClick === `function`) {
-      this._onClick();
+    let title = this._element.textContent.trim();
+    const i = title.indexOf(` `);
+    if (i !== -1) {
+      title = title.substring(0, i);
+    }
+    if (typeof this._onFilterClick === `function`) {
+      this._onFilterClick(title);
     }
   }
 
@@ -41,10 +46,10 @@ export default class extends Component {
   }
 
   bind() {
-    this._element.addEventListener(`click`, this._onMenuClick);
+    this._element.addEventListener(`click`, this._onClick);
   }
 
   unbind() {
-    this._element.removeEventListener(`click`, this._onMenuClick);
+    this._element.removeEventListener(`click`, this._onClick);
   }
 }
