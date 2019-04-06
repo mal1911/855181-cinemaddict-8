@@ -19,6 +19,10 @@ export default class Filters {
     this._onFilterChange = fn;
   }
 
+  get currFilter() {
+    return this._currTitle;
+  }
+
   render() {
     const filterData = FILTER_DATA;
     const fragment = document.createDocumentFragment();
@@ -35,13 +39,6 @@ export default class Filters {
     });
     this._mainNavigationElement.prepend(fragment);
     this.updateStatistics();
-  }
-
-  reset() {
-    this._setDefaultFilter();
-    if (typeof this._onFilterChange === `function`) {
-      this._onFilterChange(this._getFilteredData(this._data));
-    }
   }
 
   _onSearchChange(evt) {

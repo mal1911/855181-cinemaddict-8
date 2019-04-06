@@ -14,7 +14,7 @@ export default class extends Component {
     this._rating = data.filmInfo.totalRating;
     this.update(data);
     this._param = param;
-    this._onComments = null;
+    this._onEdit = null;
     this._onChangeStatus = null;
     this._onCommentsButtonClick = this._onCommentsButtonClick.bind(this);
     this._onAddWatchlistButtonClick = this._onAddWatchlistButtonClick.bind(this);
@@ -22,13 +22,13 @@ export default class extends Component {
     this._onAddFavoriteButtonClick = this._onAddFavoriteButtonClick.bind(this);
   }
 
-  set onComments(fn) {
-    this._onComments = fn;
+  set onEdit(fn) {
+    this._onEdit = fn;
   }
 
   _onCommentsButtonClick() {
-    if (typeof this._onComments === `function`) {
-      this._onComments();
+    if (typeof this._onEdit === `function`) {
+      this._onEdit();
     }
   }
 

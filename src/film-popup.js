@@ -136,6 +136,8 @@ export default class FilmPopup extends Component {
       return ``;
     };
     if (evt.ctrlKey && evt.keyCode === ENTER_KEYCODE) {
+
+
       const element = evt.target;
       const emotion = getEmotion(this._element.querySelector(`.film-details__add-emoji-label`).textContent);
       const comment = element.value;
@@ -194,6 +196,9 @@ export default class FilmPopup extends Component {
   _onEmojiClick(evt) {
     if (evt.target.tagName === `LABEL`) {
       this._element.querySelector(`.film-details__add-emoji-label`).textContent = evt.target.textContent;
+    }
+    if (evt.target.tagName === `INPUT`) {
+      this._element.querySelector(`.film-details__add-emoji`).value = evt.target.value;
     }
   }
 
