@@ -1,4 +1,6 @@
+import {HTML_STATUS} from "./constants";
 import FilmModel from "./film-model";
+
 
 const Method = {
   GET: `GET`,
@@ -8,7 +10,7 @@ const Method = {
 };
 
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= HTML_STATUS.OK && response.status < HTML_STATUS.MULTIPLE_CHOICES) {
     return response;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);

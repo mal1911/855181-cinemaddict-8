@@ -38,4 +38,8 @@ export default class Component {
     newElement.innerHTML = template;
     return newElement.firstChild;
   }
+
+  _getHTMLFromData(arrArg, getElementHTML) {
+    return arrArg.map((obj) => getElementHTML(obj)).join(``);
+  }
 }

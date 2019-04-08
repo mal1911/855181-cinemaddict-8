@@ -1,4 +1,4 @@
-import {FILTER_DATA} from "./constants";
+import {FILTER_DATA, USER_STATUS} from "./constants";
 import Filter from './filter';
 
 export default class Filters {
@@ -81,11 +81,11 @@ export default class Filters {
     menuCountElements[2].textContent = this._data.filter((it) => it.userDetails.favorite).length;
 
     let userStatus = `none`;
-    if (alreadyWatchedCount >= 1 && alreadyWatchedCount <= 10) {
+    if (alreadyWatchedCount >= USER_STATUS.NOVICE_START && alreadyWatchedCount <= USER_STATUS.NOVICE_END) {
       userStatus = `novice`;
-    } else if (alreadyWatchedCount >= 11 && alreadyWatchedCount <= 20) {
+    } else if (alreadyWatchedCount >= USER_STATUS.FAN_START && alreadyWatchedCount <= USER_STATUS.FAN_END) {
       userStatus = `fan`;
-    } else if (alreadyWatchedCount > 20) {
+    } else if (alreadyWatchedCount > USER_STATUS.FAN_END) {
       userStatus = `movie buff`;
     }
     document.querySelector(`.profile__rating`).textContent = userStatus;

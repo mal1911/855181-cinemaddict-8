@@ -1,5 +1,4 @@
-import {ENTER_KEYCODE, ESC_KEYCODE} from "./constants";
-import {getHTMLFromData} from './utils';
+import {EMOTION, ENTER_KEYCODE, ESC_KEYCODE} from "./constants";
 import Component from './component';
 import moment from 'moment';
 
@@ -124,22 +123,9 @@ export default class FilmPopup extends Component {
   }
 
   _onAddComments(evt) {
-    const getEmotion = (emotion) => {
-      switch (emotion) {
-        case `😴`:
-          return `sleeping`;
-        case `😐`:
-          return `neutral-face`;
-        case `😀`:
-          return `grinning`;
-      }
-      return ``;
-    };
     if (evt.ctrlKey && evt.keyCode === ENTER_KEYCODE) {
-
-
       const element = evt.target;
-      const emotion = getEmotion(this._element.querySelector(`.film-details__add-emoji-label`).textContent);
+      const emotion = this._element.querySelector(`.film-details__add-emoji`).value;
       const comment = element.value;
       if (comment) {
         this._comments.push({
@@ -203,17 +189,6 @@ export default class FilmPopup extends Component {
   }
 
   _getCommentHTML(comment) {
-    const getEmotion = (emotion) => {
-      switch (emotion) {
-        case `sleeping`:
-          return `😴`;
-        case `neutral-face`:
-          return `😐`;
-        case `grinning`:
-          return `😀`;
-      }
-      return ``;
-    };
     const getCommentDateDiff = (date) => {
       const currDate = moment();
 
@@ -244,7 +219,7 @@ export default class FilmPopup extends Component {
       return ``;
     };
     return `<li class="film-details__comment">
-              <span class="film-details__comment-emoji">${getEmotion(comment.emotion)}</span>
+              <span class="film-details__comment-emoji">${EMOTION[comment.emotion]}</span>
                 <div>
                   <p class="film-details__comment-text">${comment.comment}</p>
                   <p class="film-details__comment-info">
@@ -256,12 +231,12 @@ export default class FilmPopup extends Component {
   }
 
   _getCommentsHTML() {
-    return getHTMLFromData(this._comments, this._getCommentHTML);
+    return this._getHTMLFromData(this._comments, this._getCommentHTML);
   }
 
   _refreshComments() {
     let parentElement = this._element.querySelector(`.film-details__comments-count`);
-    parentElement.innerHTML = this._comments.length;
+    parentElement.textContent = this._comments.length;
     parentElement = this._element.querySelector(`.film-details__comments-list`);
     parentElement.innerHTML = this._getCommentsHTML();
     const userRatindElement = this._element.querySelector(`.film-details__user-rating-controls`);
@@ -367,7 +342,7 @@ export default class FilmPopup extends Component {
                   <div class="film-details__new-comment">
                     <div>
                       <label for="add-emoji" class="film-details__add-emoji-label">😐</label>
-                      <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji">
+                      <input type="checkbox" class="film-details__add-emoji visually-hidden" id="add-emoji" value="neutral-face">
             
                       <div class="film-details__emoji-list">
                         <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">

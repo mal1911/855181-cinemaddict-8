@@ -24,15 +24,12 @@ export default class Films {
   }
 
   _isVisibleFilm(obj) {
-    switch (this._filtersComponent.currFilter) {
-      case `Watchlist`:
-        return obj.userDetails.watchlist;
-      case `History`:
-        return obj.userDetails.alreadyWatched;
-      case `Favorites`:
-        return obj.userDetails.favorite;
-    }
-    return true;
+    return {
+      [`All`]: true,
+      [`Watchlist`]: obj.userDetails.watchlist,
+      [`History`]: obj.userDetails.alreadyWatched,
+      [`Favorites`]: obj.userDetails.favorite
+    }[this._filtersComponent.currFilter];
   }
 
   _updateData(data, newObj) {
@@ -47,6 +44,18 @@ export default class Films {
   }
 
   render(filteredData, filmCount = null) {
+    const updateObj = (newObj, filmComponent) => {
+      this._updateData(this._data, newObj);
+      if (this._isVisibleFilm(newObj)) {
+        filmComponent.update(newObj);
+        filmComponent.refresh();
+      } else {
+        this._deleteData(filteredData, newObj);
+        filmComponent.unrender();
+      }
+      return newObj;
+    };
+
     const bodyElement = document.querySelector(`body`);
     const fragment = document.createDocumentFragment();
     this._parentElement.innerHTML = ``;
@@ -66,19 +75,13 @@ export default class Films {
         };
 
         filmComponent.onChangeStatus = (obj) => {
-
+          filmComponent.block();
           const newObj = Object.assign(filmObj);
           newObj.userDetails = obj;
-          filmComponent.block();
           this._provider.updateFilm({id: newObj.id, data: newObj.toRAW()})
             .then((newObj1) => {
-              filmObj = newObj1;
-              this._updateData(this._data, filmObj);
-              filmPopupComponent.changeUserDetails(newObj1.userDetails);
-              if (!this._isVisibleFilm(filmObj)) {
-                this._deleteData(filteredData, filmObj);
-                filmComponent.unrender();
-              }
+              filmObj = updateObj(newObj1, filmComponent);
+              filmPopupComponent.changeUserDetails(filmObj.userDetails);
               if (typeof this._onUpdateSuccess === `function`) {
                 this._onUpdateSuccess(filmObj);
               }
@@ -95,22 +98,13 @@ export default class Films {
             formPopupElement.classList.remove(`shake`);
           }
           filmPopupComponent.block();
-
           const newObj = Object.assign(filmObj);
           newObj.userDetails = obj.userDetails;
           newObj.comments = obj.comments;
 
           this._provider.updateFilm({id: newObj.id, data: newObj.toRAW()})
             .then((newObj1) => {
-              filmObj = newObj1;
-              this._updateData(this._data, filmObj);
-              if (this._isVisibleFilm(filmObj)) {
-                filmComponent.update(filmObj);
-                filmComponent.refresh();
-              } else {
-                this._deleteData(filteredData, filmObj);
-                filmComponent.unrender();
-              }
+              filmObj = updateObj(newObj1, filmComponent);
               filmPopupComponent.unrender();
               if (typeof this._onUpdateSuccess === `function`) {
                 this._onUpdateSuccess(filmObj);

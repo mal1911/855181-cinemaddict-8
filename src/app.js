@@ -1,3 +1,4 @@
+import {MAX_TOP_COUNT} from "./constants";
 import Filters from './filters';
 import Films from './films';
 import Page from './page';
@@ -19,11 +20,11 @@ export default class App {
 
     topRatingFilmsComponents.render(data.sort((objA, objB) => {
       return objB.filmInfo.totalRating - objA.filmInfo.totalRating;
-    }).slice(0, 2));
+    }).slice(0, MAX_TOP_COUNT));
 
     topCommentsFilmsComponents.render(data.sort((objA, objB) => {
       return objB.comments.length - objA.comments.length;
-    }).slice(0, 2));
+    }).slice(0, MAX_TOP_COUNT));
   }
 
   _showFooterStatistics(data) {
