@@ -22,6 +22,7 @@ export default class FilmPopup extends Component {
     this.update(data);
 
     this._onSave = null;
+    this._onClose = null;
     this._onCloseButtonClick = this._onCloseButtonClick.bind(this);
     this._onEscPress = this._onEscPress.bind(this);
     this._onAddComments = this._onAddComments.bind(this);
@@ -31,8 +32,8 @@ export default class FilmPopup extends Component {
     this._onControlsClick = this._onControlsClick.bind(this);
   }
 
-  _processForm(formData) {
-    const entry = {
+  _processForm(formData, entry) {
+    /*const entry = {
       comments: [],
       userDetails: {
         watchlist: false,
@@ -41,7 +42,7 @@ export default class FilmPopup extends Component {
         personalRating: 0,
       },
     };
-
+*/
     const filmEditMapper = FilmPopup.createMapper(entry);
 
     for (const pair of formData.entries()) {
@@ -50,6 +51,7 @@ export default class FilmPopup extends Component {
         filmEditMapper[property](value);
       }
     }
+    /*
     entry.comments = this._comments.map((obj) => {
       return {
         emotion: obj.emotion,
@@ -58,6 +60,7 @@ export default class FilmPopup extends Component {
         date: obj.date,
       };
     });
+*/
     return entry;
   }
 
@@ -86,29 +89,69 @@ export default class FilmPopup extends Component {
     this._onSave = fn;
   }
 
+  set onClose(fn) {
+    this._onClose = fn;
+  }
+
+
   _onCloseButtonClick(evt) {
     evt.preventDefault();
-    this._save();
+    this._close();
   }
 
   _onEscPress(evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      this._save();
+      this._close();
     }
   }
 
-  _save() {
-    const formData = new FormData(this._element.querySelector(`.film-details__inner`));
-    const newData = this._processForm(formData);
+  save(userDetailObj = null) {
+
+    let newData = {
+      comments: [],
+      userDetails: {
+        watchlist: false,
+        alreadyWatched: false,
+        favorite: false,
+        personalRating: 0,
+      },
+    };
+
+    newData.comments = this._comments.map((obj) => {
+      return {
+        emotion: obj.emotion,
+        comment: obj.comment,
+        author: obj.author,
+        date: obj.date,
+      };
+    });
+
+    if (userDetailObj) {
+      this._userDetails = Object.assign({}, userDetailObj);
+      newData.userDetails = this._userDetails;
+    } else {
+      const formData = new FormData(this._element.querySelector(`.film-details__inner`));
+      newData = this._processForm(formData, newData);
+    }
+
     if (typeof this._onSave === `function`) {
       this._onSave(newData);
     }
+
     this.update(newData);
+    return newData;
   }
 
-  changeUserDetails(obj) {
-    this._userDetails = Object.assign({}, obj);
+
+  _close() {
+    if (typeof this._onClose === `function`) {
+      this._onClose(this.save());
+    }
   }
+
+  /*changeUserDetails(obj) {
+    this._userDetails = Object.assign({}, obj);
+  }*/
 
   block() {
     if (this._element) {

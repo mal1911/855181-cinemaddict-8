@@ -28,34 +28,40 @@ export default class Films {
       [`All`]: true,
       [`Watchlist`]: obj.userDetails.watchlist,
       [`History`]: obj.userDetails.alreadyWatched,
-      [`Favorites`]: obj.userDetails.favorite
+      [`Favorites`]: obj.userDetails.favorite,
     }[this._filtersComponent.currFilter];
   }
 
   _updateData(data, newObj) {
     const updatedObj = data.find((it) => it.id === newObj.id);
-    updatedObj.userDetails = newObj.userDetails;
-    updatedObj.comments = newObj.comments;
+    if (updatedObj) {
+      updatedObj.userDetails = newObj.userDetails;
+      updatedObj.comments = newObj.comments;
+    }
     return updatedObj;
   }
 
   _deleteData(data, deletedObj) {
-    data.splice(data.indexOf(deletedObj));
+    const index = data.indexOf(deletedObj);
+    if (index !== -1) {
+      data.splice(index);
+    }
   }
 
-  render(filteredData, filmCount = null) {
-    const updateObj = (newObj, filmComponent) => {
-      this._updateData(this._data, newObj);
-      if (this._isVisibleFilm(newObj)) {
-        filmComponent.update(newObj);
-        filmComponent.refresh();
-      } else {
-        this._deleteData(filteredData, newObj);
-        filmComponent.unrender();
-      }
-      return newObj;
-    };
+  _updateObj(data, filteredData, newObj, filmComponent) {
+    this._updateData(data, newObj);
+    if (this._isVisibleFilm(newObj)) {
+      filmComponent.update(newObj);
+      filmComponent.refresh();
+    } else {
+      this._deleteData(filteredData, newObj);
+      filmComponent.unrender();
+    }
+    return newObj;
+  }
 
+
+  render(filteredData, filmCount = null) {
     const bodyElement = document.querySelector(`body`);
     const fragment = document.createDocumentFragment();
     this._parentElement.innerHTML = ``;
@@ -74,14 +80,25 @@ export default class Films {
           bodyElement.append(filmPopupComponent.element);
         };
 
+
         filmComponent.onChangeStatus = (obj) => {
           filmComponent.block();
+          filmPopupComponent.save(obj);
+
+          /*
           const newObj = Object.assign(filmObj);
           newObj.userDetails = obj;
           this._provider.updateFilm({id: newObj.id, data: newObj.toRAW()})
             .then((newObj1) => {
               filmObj = updateObj(newObj1, filmComponent);
-              filmPopupComponent.changeUserDetails(filmObj.userDetails);
+
+              //save
+              //filmPopupComponent.changeUserDetails(filmObj.userDetails);
+
+
+
+
+
               if (typeof this._onUpdateSuccess === `function`) {
                 this._onUpdateSuccess(filmObj);
               }
@@ -90,11 +107,20 @@ export default class Films {
                 this._onUpdateError(err);
               }
             });
+
+          */
           filmComponent.unblock();
         };
+
+        filmPopupComponent.onClose = (newObj) => {
+          //console.log(newObj);
+          filmPopupComponent.unrender();
+          //updateObj(newObj, filmComponent);
+        };
+
         filmPopupComponent.onSave = (obj) => {
           const formPopupElement = document.querySelector(`.film-details__inner`);
-          if (formPopupElement.classList.contains(`shake`)) {
+          if (formPopupElement && formPopupElement.classList.contains(`shake`)) {
             formPopupElement.classList.remove(`shake`);
           }
           filmPopupComponent.block();
@@ -104,12 +130,21 @@ export default class Films {
 
           this._provider.updateFilm({id: newObj.id, data: newObj.toRAW()})
             .then((newObj1) => {
-              filmObj = updateObj(newObj1, filmComponent);
-              filmPopupComponent.unrender();
+              filmObj = this._updateObj(this._data, filteredData, newObj1, filmComponent);
+
+//              filmPopupComponent.unrender();
               if (typeof this._onUpdateSuccess === `function`) {
                 this._onUpdateSuccess(filmObj);
               }
-            }).catch(() => formPopupElement.classList.add(`shake`));
+            }).catch((err) => {
+            if (formPopupElement) {
+              formPopupElement.classList.add(`shake`);
+            } else {
+              if (typeof this._onUpdateError === `function`) {
+                this._onUpdateError(err);
+              }
+            }
+          });
 
           filmPopupComponent.unblock();
         };
