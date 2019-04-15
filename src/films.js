@@ -48,19 +48,6 @@ export default class Films {
     }
   }
 
-  _updateObj(data, filteredData, newObj, filmComponent) {
-    this._updateData(data, newObj);
-    if (this._isVisibleFilm(newObj)) {
-      filmComponent.update(newObj);
-      filmComponent.refresh();
-    } else {
-      this._deleteData(filteredData, newObj);
-      filmComponent.unrender();
-    }
-    return newObj;
-  }
-
-
   render(filteredData, filmCount = null) {
     const bodyElement = document.querySelector(`body`);
     const fragment = document.createDocumentFragment();
@@ -80,73 +67,60 @@ export default class Films {
           bodyElement.append(filmPopupComponent.element);
         };
 
-
         filmComponent.onChangeStatus = (obj) => {
           filmComponent.block();
-          filmPopupComponent.save(obj);
-
-          /*
-          const newObj = Object.assign(filmObj);
-          newObj.userDetails = obj;
-          this._provider.updateFilm({id: newObj.id, data: newObj.toRAW()})
-            .then((newObj1) => {
-              filmObj = updateObj(newObj1, filmComponent);
-
-              //save
-              //filmPopupComponent.changeUserDetails(filmObj.userDetails);
-
-
-
-
-
-              if (typeof this._onUpdateSuccess === `function`) {
-                this._onUpdateSuccess(filmObj);
-              }
-            }).catch((err) => {
-              if (typeof this._onUpdateError === `function`) {
-                this._onUpdateError(err);
-              }
-            });
-
-          */
+          filmPopupComponent.save(obj, {isFilmStatistics: true});
           filmComponent.unblock();
         };
 
-        filmPopupComponent.onClose = (newObj) => {
-          //console.log(newObj);
+        filmPopupComponent.onClose = () => {
           filmPopupComponent.unrender();
-          //updateObj(newObj, filmComponent);
         };
 
-        filmPopupComponent.onSave = (obj) => {
+        filmPopupComponent.onSave = (obj, param) => {
           const formPopupElement = document.querySelector(`.film-details__inner`);
           if (formPopupElement && formPopupElement.classList.contains(`shake`)) {
             formPopupElement.classList.remove(`shake`);
           }
           filmPopupComponent.block();
-          const newObj = Object.assign(filmObj);
-          newObj.userDetails = obj.userDetails;
-          newObj.comments = obj.comments;
+          const oldUserDetailsObj = Object.assign({}, filmObj.userDetails);
+          const oldCommentsObj = filmObj.comments.slice();
+          filmObj.userDetails = obj.userDetails;
+          filmObj.comments = obj.comments;
 
-          this._provider.updateFilm({id: newObj.id, data: newObj.toRAW()})
-            .then((newObj1) => {
-              filmObj = this._updateObj(this._data, filteredData, newObj1, filmComponent);
+          this._provider.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
+            .then((newObj) => {
+              filmObj = newObj;
+              this._updateData(this._data, filmObj);
 
-//              filmPopupComponent.unrender();
+              if (this._isVisibleFilm(filmObj)) {
+                filmComponent.update(filmObj);
+                filmComponent.refresh();
+              } else {
+                this._deleteData(filteredData, filmObj);
+                filmComponent.unrender();
+              }
               if (typeof this._onUpdateSuccess === `function`) {
                 this._onUpdateSuccess(filmObj);
               }
             }).catch((err) => {
-            if (formPopupElement) {
-              formPopupElement.classList.add(`shake`);
-            } else {
-              if (typeof this._onUpdateError === `function`) {
-                this._onUpdateError(err);
+              filmObj.userDetails = oldUserDetailsObj;
+              filmObj.comments = oldCommentsObj;
+              param.isError = true;
+              if (formPopupElement && param.isAddComment) {
+                formPopupElement.classList.add(`shake`);
+              } else {
+                if (typeof this._onUpdateError === `function`) {
+                  this._onUpdateError(err);
+                }
               }
-            }
-          });
-
-          filmPopupComponent.unblock();
+            }).finally(() => {
+              filmPopupComponent.update(filmObj);
+              if (!param.isError || (param.isError && !param.isAddComment)) {
+                filmPopupComponent.refresh();
+              }
+              filmPopupComponent.unblock();
+            });
         };
         fragment.appendChild(filmComponent.render());
       }

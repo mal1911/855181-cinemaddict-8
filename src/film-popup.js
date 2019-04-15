@@ -18,6 +18,7 @@ export default class FilmPopup extends Component {
     this._ageRating = data.filmInfo.ageRating;
     this._rating = data.filmInfo.totalRating;
     this._country = data.filmInfo.release.releaseCountry;
+    this._addComentsCount = 0;
 
     this.update(data);
 
@@ -33,16 +34,6 @@ export default class FilmPopup extends Component {
   }
 
   _processForm(formData, entry) {
-    /*const entry = {
-      comments: [],
-      userDetails: {
-        watchlist: false,
-        alreadyWatched: false,
-        favorite: false,
-        personalRating: 0,
-      },
-    };
-*/
     const filmEditMapper = FilmPopup.createMapper(entry);
 
     for (const pair of formData.entries()) {
@@ -51,16 +42,6 @@ export default class FilmPopup extends Component {
         filmEditMapper[property](value);
       }
     }
-    /*
-    entry.comments = this._comments.map((obj) => {
-      return {
-        emotion: obj.emotion,
-        comment: obj.comment,
-        author: obj.author,
-        date: obj.date,
-      };
-    });
-*/
     return entry;
   }
 
@@ -101,11 +82,15 @@ export default class FilmPopup extends Component {
 
   _onEscPress(evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      this._close();
+      if (!document.querySelector(`.popup-message--error`)) {
+        console.log(evt.target);
+        evt.preventDefault();
+        this._close();
+      }
     }
   }
 
-  save(userDetailObj = null) {
+  save(userDetailObj = null, param = null) {
 
     let newData = {
       comments: [],
@@ -135,7 +120,7 @@ export default class FilmPopup extends Component {
     }
 
     if (typeof this._onSave === `function`) {
-      this._onSave(newData);
+      this._onSave(newData, param);
     }
 
     this.update(newData);
@@ -145,13 +130,10 @@ export default class FilmPopup extends Component {
 
   _close() {
     if (typeof this._onClose === `function`) {
-      this._onClose(this.save());
+      this._onClose();
+      //this._onClose(this.save(null, {isClose: true}));
     }
   }
-
-  /*changeUserDetails(obj) {
-    this._userDetails = Object.assign({}, obj);
-  }*/
 
   block() {
     if (this._element) {
@@ -176,18 +158,19 @@ export default class FilmPopup extends Component {
           comment,
           author: `Alexey Malyshev`,
           date: new Date(),
-          updated: true,
         });
         element.value = ``;
-        this._refreshComments();
+        this._addComentsCount++;
+        this.save(null, {isAddComment: true});
       }
     }
   }
 
   _onDeleteLastCommentClick() {
-    if (this._isLastCommentUpdated()) {
+    if (this._addComentsCount) {
       this._comments.pop();
-      this._refreshComments();
+      this._addComentsCount--;
+      this.save(null, {isDeleteComment: true});
     }
   }
 
@@ -209,17 +192,17 @@ export default class FilmPopup extends Component {
         }
       }
     }
-    this._element.querySelector(`.film-details__watched-status`).textContent = this._getWatchedStatus(this._userDetails);
+    console.log(`click statistics`);
+    this.save(null, {isChangeStatistic: true});
+    //this._element.querySelector(`.film-details__watched-status`).textContent = this._getWatchedStatus(this._userDetails);
   }
 
   _onChangeUserRating(evt) {
     if (evt.target.tagName === `LABEL`) {
-      this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${evt.target.textContent.trim()}`;
+      console.log(`user rating`);
+      this.save(null, {isChangeRating: true});
+      //this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${evt.target.textContent.trim()}`;
     }
-  }
-
-  _isLastCommentUpdated() {
-    return this._comments[this._comments.length - 1].updated;
   }
 
   _onEmojiClick(evt) {
@@ -489,6 +472,18 @@ export default class FilmPopup extends Component {
       .removeEventListener(`click`, this._onDeleteLastCommentClick);
     this._element.querySelector(`.film-details__controls`)
       .removeEventListener(`click`, this._onControlsClick);
+  }
+
+  refresh() {
+    if (this._element) {
+      this.unbind();
+      this._partialUpdate();
+      this.bind();
+    }
+  }
+
+  _partialUpdate() {
+    this._element.innerHTML = this.createElement(this.template).innerHTML;
   }
 
   update(data) {
