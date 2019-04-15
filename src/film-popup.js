@@ -82,11 +82,8 @@ export default class FilmPopup extends Component {
 
   _onEscPress(evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      if (!document.querySelector(`.popup-message--error`)) {
-        console.log(evt.target);
-        evt.preventDefault();
-        this._close();
-      }
+      evt.preventDefault();
+      this._close();
     }
   }
 
@@ -112,8 +109,7 @@ export default class FilmPopup extends Component {
     });
 
     if (userDetailObj) {
-      this._userDetails = Object.assign({}, userDetailObj);
-      newData.userDetails = this._userDetails;
+      newData.userDetails = Object.assign({}, userDetailObj);
     } else {
       const formData = new FormData(this._element.querySelector(`.film-details__inner`));
       newData = this._processForm(formData, newData);
@@ -127,11 +123,9 @@ export default class FilmPopup extends Component {
     return newData;
   }
 
-
   _close() {
     if (typeof this._onClose === `function`) {
-      this._onClose();
-      //this._onClose(this.save(null, {isClose: true}));
+      this._onClose(this.save(null, {isPopupClose: true}));
     }
   }
 
@@ -174,35 +168,15 @@ export default class FilmPopup extends Component {
     }
   }
 
-  _onControlsClick(evt) {
-    const title = evt.target.name;
-    if (title) {
-      switch (title) {
-        case `watched`: {
-          this._userDetails.alreadyWatched = !this._userDetails.alreadyWatched;
-          break;
-        }
-        case `watchlist`: {
-          this._userDetails.watchlist = !this._userDetails.watchlist;
-          break;
-        }
-        case `favorite`: {
-          this._userDetails.favorite = !this._userDetails.favorite;
-          break;
-        }
-      }
-    }
-    console.log(`click statistics`);
+  _onControlsClick() {
     this.save(null, {isChangeStatistic: true});
-    //this._element.querySelector(`.film-details__watched-status`).textContent = this._getWatchedStatus(this._userDetails);
   }
 
   _onChangeUserRating(evt) {
-    if (evt.target.tagName === `LABEL`) {
-      console.log(`user rating`);
+    if (evt.target.tagName === `INPUT`) {
       this.save(null, {isChangeRating: true});
-      //this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${evt.target.textContent.trim()}`;
     }
+
   }
 
   _onEmojiClick(evt) {
@@ -266,11 +240,13 @@ export default class FilmPopup extends Component {
     parentElement = this._element.querySelector(`.film-details__comments-list`);
     parentElement.innerHTML = this._getCommentsHTML();
     const userRatindElement = this._element.querySelector(`.film-details__user-rating-controls`);
-    if (this._isLastCommentUpdated()) {
+
+    //
+   /* if (this._isLastCommentUpdated()) {
       userRatindElement.classList.remove(`visually-hidden`);
     } else {
       userRatindElement.classList.add(`visually-hidden`);
-    }
+    }*/
   }
 
   _getWatchedStatus(userDetails) {
@@ -281,6 +257,49 @@ export default class FilmPopup extends Component {
       return `Will watch`;
     }
     return ``;
+  }
+
+  _getDetailsControlsHTML() {
+    return `<input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist" ${this._userDetails.watchlist && ` checked`}>
+            <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+            <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" ${this._userDetails.alreadyWatched && ` checked`}>
+            <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
+            <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite" ${this._userDetails.favorite && ` checked`}>
+            <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>`;
+  }
+
+  _refreshDetailsControls() {
+    const detailsControlsElement = this.element.querySelector(`.film-details__controls`);
+    detailsControlsElement.innerHTML = this._getDetailsControlsHTML();
+    this._element.querySelector(`.film-details__watched-status`).textContent = this._getWatchedStatus(this._userDetails);
+  }
+
+  _getUserRatingScoreHTML() {
+    return `<input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="0" id="rating-0" ${this._userDetails.personalRating === 0 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-0">0</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1" ${this._userDetails.personalRating === 1 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-1">1</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userDetails.personalRating === 2 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-2">2</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userDetails.personalRating === 3 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-3">3</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userDetails.personalRating === 4 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-4">4</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userDetails.personalRating === 5 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-5">5</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6" ${this._userDetails.personalRating === 6 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-6">6</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userDetails.personalRating === 7 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-7">7</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userDetails.personalRating === 8 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-8">8</label>
+            <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userDetails.personalRating === 9 && ` checked`}>
+            <label class="film-details__user-rating-label" for="rating-9">9</label>`;
+  }
+
+  _refreshUresRatingScore() {
+    const userRatingScoreElement = this.element.querySelector(`.film-details__user-rating-score`);
+    userRatingScoreElement.innerHTML = this._getUserRatingScoreHTML();
   }
 
   get template() {
@@ -348,18 +367,11 @@ export default class FilmPopup extends Component {
                 </div>
             
                 <section class="film-details__controls">
-                  <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist" ${this._userDetails.watchlist && ` checked`}>
-                    <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
-              
-                    <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched" ${this._userDetails.alreadyWatched && ` checked`}>
-                      <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
-                
-                      <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite" ${this._userDetails.favorite && ` checked`}>
-                        <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
-                      </section>
+                  ${this._getDetailsControlsHTML()}
+                </section>
                   
-                      <section class="film-details__comments-wrap">
-                        <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
+                <section class="film-details__comments-wrap">
+                  <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
             
                   <ul class="film-details__comments-list">
                     ${this._getCommentsHTML()}
@@ -402,39 +414,11 @@ export default class FilmPopup extends Component {
                       <h3 class="film-details__user-rating-title">${this._title}</h3>
             
                       <p class="film-details__user-rating-feelings">How you feel it?</p>
-            
+
                       <div class="film-details__user-rating-score">
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="0" id="rating-0" ${this._userDetails.personalRating === 0 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-0">0</label>
-    
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="1" id="rating-1" ${this._userDetails.personalRating === 1 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-1">1</label>
-              
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="2" id="rating-2" ${this._userDetails.personalRating === 2 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-2">2</label>
-                
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="3" id="rating-3" ${this._userDetails.personalRating === 3 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-3">3</label>
-                  
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="4" id="rating-4" ${this._userDetails.personalRating === 4 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-4">4</label>
-                    
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="5" id="rating-5" ${this._userDetails.personalRating === 5 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-5">5</label>
-            
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="6" id="rating-6" ${this._userDetails.personalRating === 6 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-6">6</label>
-              
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="7" id="rating-7" ${this._userDetails.personalRating === 7 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-7">7</label>
-                
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="8" id="rating-8" ${this._userDetails.personalRating === 8 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-8">8</label>
-                  
-                        <input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value="9" id="rating-9" ${this._userDetails.personalRating === 9 && ` checked`}>
-                        <label class="film-details__user-rating-label" for="rating-9">9</label>
-                    
+                        ${this._getUserRatingScoreHTML()}
                       </div>
+
                     </section>
                   </div>
                 </section>
@@ -474,16 +458,21 @@ export default class FilmPopup extends Component {
       .removeEventListener(`click`, this._onControlsClick);
   }
 
-  refresh() {
+  refresh(param = null) {
     if (this._element) {
-      this.unbind();
-      this._partialUpdate();
-      this.bind();
-    }
-  }
+      if (param.isAddComment) {
+        console.log(`addComment`);
+        this._refreshComments();
+      } else if (param.isChangeRating) {
+        console.log(`isChangeRating`);
+        this._refreshUresRatingScore();
+        this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${this._userDetails.personalRating}`;
 
-  _partialUpdate() {
-    this._element.innerHTML = this.createElement(this.template).innerHTML;
+      } else if (param.isChangeStatistic) {
+        console.log(`isChangeStatistic`);
+        this._refreshDetailsControls();
+      }
+    }
   }
 
   update(data) {

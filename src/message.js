@@ -27,20 +27,20 @@ export default class extends Component {
   }
 
   bind() {
-    //this._element.addEventListener(`click`, this._close);
     document.addEventListener(`click`, this._close);
+    document.addEventListener(`mousemove`, this._close);
     document.addEventListener(`keydown`, this._onEscPress);
   }
 
   unbind() {
-    //this._element.removeEventListener(`click`, this._close);
     document.removeEventListener(`click`, this._close);
+    document.removeEventListener(`mousemove`, this._close);
     document.removeEventListener(`keydown`, this._onEscPress);
   }
 
   _onEscPress(evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      console.log(evt.target);
+      evt.stopImmediatePropagation();
       evt.preventDefault();
       this.unrender();
     }

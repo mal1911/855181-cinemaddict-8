@@ -41,10 +41,10 @@ export default class Films {
     return updatedObj;
   }
 
-  _deleteData(data, deletedObj) {
-    const index = data.indexOf(deletedObj);
-    if (index !== -1) {
-      data.splice(index);
+  _deleteData(data, id) {
+    const deletedObj = data.find((it) => it.id === id);
+    if (deletedObj) {
+      data.splice(data.indexOf(deletedObj));
     }
   }
 
@@ -83,22 +83,28 @@ export default class Films {
             formPopupElement.classList.remove(`shake`);
           }
           filmPopupComponent.block();
+
+
+
           const oldUserDetailsObj = Object.assign({}, filmObj.userDetails);
           const oldCommentsObj = filmObj.comments.slice();
+
           filmObj.userDetails = obj.userDetails;
           filmObj.comments = obj.comments;
 
           this._provider.updateFilm({id: filmObj.id, data: filmObj.toRAW()})
             .then((newObj) => {
               filmObj = newObj;
-              this._updateData(this._data, filmObj);
-
-              if (this._isVisibleFilm(filmObj)) {
-                filmComponent.update(filmObj);
-                filmComponent.refresh();
-              } else {
-                this._deleteData(filteredData, filmObj);
-                filmComponent.unrender();
+              filmPopupComponent.update(filmObj);
+              if (param.isFilmStatistics || param.isPopupClose) {
+                this._updateData(this._data, filmObj);
+                if (this._isVisibleFilm(filmObj)) {
+                  filmComponent.update(filmObj);
+                  filmComponent.refresh();
+                } else {
+                  this._deleteData(filteredData, filmObj.id);
+                  filmComponent.unrender();
+                }
               }
               if (typeof this._onUpdateSuccess === `function`) {
                 this._onUpdateSuccess(filmObj);
@@ -107,6 +113,7 @@ export default class Films {
               filmObj.userDetails = oldUserDetailsObj;
               filmObj.comments = oldCommentsObj;
               param.isError = true;
+
               if (formPopupElement && param.isAddComment) {
                 formPopupElement.classList.add(`shake`);
               } else {
@@ -115,10 +122,9 @@ export default class Films {
                 }
               }
             }).finally(() => {
-              filmPopupComponent.update(filmObj);
-              if (!param.isError || (param.isError && !param.isAddComment)) {
-                filmPopupComponent.refresh();
-              }
+              //if ((!param.isError && !param.isChangeRating) || (param.isError && !param.isAddComment)) {
+                filmPopupComponent.refresh(param);
+              //}
               filmPopupComponent.unblock();
             });
         };
