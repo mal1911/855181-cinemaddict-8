@@ -69,7 +69,7 @@ export default class Films {
 
         filmComponent.onChangeStatus = (obj) => {
           filmComponent.block();
-          filmPopupComponent.save(obj, {isFilmStatistics: true});
+          filmPopupComponent.save(obj, null, {isFilmStatistics: true});
           filmComponent.unblock();
         };
 
@@ -83,8 +83,6 @@ export default class Films {
             formPopupElement.classList.remove(`shake`);
           }
           filmPopupComponent.block();
-
-
 
           const oldUserDetailsObj = Object.assign({}, filmObj.userDetails);
           const oldCommentsObj = filmObj.comments.slice();
@@ -114,7 +112,7 @@ export default class Films {
               filmObj.comments = oldCommentsObj;
               param.isError = true;
 
-              if (formPopupElement && param.isAddComment) {
+              if (formPopupElement) {
                 formPopupElement.classList.add(`shake`);
               } else {
                 if (typeof this._onUpdateError === `function`) {
@@ -122,9 +120,7 @@ export default class Films {
                 }
               }
             }).finally(() => {
-              //if ((!param.isError && !param.isChangeRating) || (param.isError && !param.isAddComment)) {
-                filmPopupComponent.refresh(param);
-              //}
+              filmPopupComponent.refresh(param);
               filmPopupComponent.unblock();
             });
         };

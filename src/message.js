@@ -40,7 +40,6 @@ export default class extends Component {
 
   _onEscPress(evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      evt.stopImmediatePropagation();
       evt.preventDefault();
       this.unrender();
     }

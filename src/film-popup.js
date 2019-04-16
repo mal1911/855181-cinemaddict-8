@@ -18,8 +18,6 @@ export default class FilmPopup extends Component {
     this._ageRating = data.filmInfo.ageRating;
     this._rating = data.filmInfo.totalRating;
     this._country = data.filmInfo.release.releaseCountry;
-    this._addComentsCount = 0;
-
     this.update(data);
 
     this._onSave = null;
@@ -74,7 +72,6 @@ export default class FilmPopup extends Component {
     this._onClose = fn;
   }
 
-
   _onCloseButtonClick(evt) {
     evt.preventDefault();
     this._close();
@@ -87,8 +84,7 @@ export default class FilmPopup extends Component {
     }
   }
 
-  save(userDetailObj = null, param = null) {
-
+  save(userDetailObj = null, comments = null, param = null) {
     let newData = {
       comments: [],
       userDetails: {
@@ -98,34 +94,26 @@ export default class FilmPopup extends Component {
         personalRating: 0,
       },
     };
-
-    newData.comments = this._comments.map((obj) => {
-      return {
-        emotion: obj.emotion,
-        comment: obj.comment,
-        author: obj.author,
-        date: obj.date,
-      };
-    });
-
+    if (comments) {
+      newData.comments = comments;
+    } else {
+      newData.comments = this._comments;
+    }
     if (userDetailObj) {
       newData.userDetails = Object.assign({}, userDetailObj);
     } else {
       const formData = new FormData(this._element.querySelector(`.film-details__inner`));
       newData = this._processForm(formData, newData);
     }
-
     if (typeof this._onSave === `function`) {
       this._onSave(newData, param);
     }
-
-    this.update(newData);
     return newData;
   }
 
   _close() {
     if (typeof this._onClose === `function`) {
-      this._onClose(this.save(null, {isPopupClose: true}));
+      this._onClose(this.save(null, null, {isPopupClose: true}));
     }
   }
 
@@ -147,34 +135,33 @@ export default class FilmPopup extends Component {
       const emotion = this._element.querySelector(`.film-details__add-emoji`).value;
       const comment = element.value;
       if (comment) {
-        this._comments.push({
+        const newComments = this._comments.slice();
+        newComments.push({
           emotion,
           comment,
           author: `Alexey Malyshev`,
           date: new Date(),
         });
-        element.value = ``;
-        this._addComentsCount++;
-        this.save(null, {isAddComment: true});
+        this.save(null, newComments, {isAddComment: true});
       }
     }
   }
 
   _onDeleteLastCommentClick() {
-    if (this._addComentsCount) {
-      this._comments.pop();
-      this._addComentsCount--;
-      this.save(null, {isDeleteComment: true});
+    if (this._isLastCommentUpdated()) {
+      const newComments = this._comments.slice();
+      newComments.pop();
+      this.save(null, newComments, {isDeleteComment: true});
     }
   }
 
   _onControlsClick() {
-    this.save(null, {isChangeStatistic: true});
+    this.save(null, null, {isChangeStatistic: true});
   }
 
   _onChangeUserRating(evt) {
     if (evt.target.tagName === `INPUT`) {
-      this.save(null, {isChangeRating: true});
+      this.save(null, null, {isChangeRating: true});
     }
 
   }
@@ -239,14 +226,18 @@ export default class FilmPopup extends Component {
     parentElement.textContent = this._comments.length;
     parentElement = this._element.querySelector(`.film-details__comments-list`);
     parentElement.innerHTML = this._getCommentsHTML();
-    const userRatindElement = this._element.querySelector(`.film-details__user-rating-controls`);
 
-    //
-   /* if (this._isLastCommentUpdated()) {
+    const userRatindElement = this._element.querySelector(`.film-details__user-rating-controls`);
+    if (this._isLastCommentUpdated()) {
       userRatindElement.classList.remove(`visually-hidden`);
     } else {
       userRatindElement.classList.add(`visually-hidden`);
-    }*/
+    }
+    this._element.querySelector(`.film-details__comment-input`).value = ``;
+  }
+
+  _isLastCommentUpdated() {
+    return this._comments[this._comments.length - 1].author === `Alexey Malyshev`;
   }
 
   _getWatchedStatus(userDetails) {
@@ -300,6 +291,7 @@ export default class FilmPopup extends Component {
   _refreshUresRatingScore() {
     const userRatingScoreElement = this.element.querySelector(`.film-details__user-rating-score`);
     userRatingScoreElement.innerHTML = this._getUserRatingScoreHTML();
+    this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${this._userDetails.personalRating}`;
   }
 
   get template() {
@@ -400,7 +392,7 @@ export default class FilmPopup extends Component {
                 </section>
             
                 <section class="film-details__user-rating-wrap">
-                  <div class="film-details__user-rating-controls  visually-hidden">
+                  <div class="film-details__user-rating-controls  ${!this._isLastCommentUpdated() ? `visually-hidden` : ``} ">
                     <span class="film-details__watched-status film-details__watched-status--active">${this._getWatchedStatus(this._userDetails)}</span>
                     <button class="film-details__watched-reset" type="button">undo</button>
                   </div>
@@ -460,16 +452,11 @@ export default class FilmPopup extends Component {
 
   refresh(param = null) {
     if (this._element) {
-      if (param.isAddComment) {
-        console.log(`addComment`);
+      if ((param.isAddComment || param.isDeleteComment) && !param.isError) {
         this._refreshComments();
       } else if (param.isChangeRating) {
-        console.log(`isChangeRating`);
         this._refreshUresRatingScore();
-        this._element.querySelector(`.film-details__user-rating`).textContent = `Your rate ${this._userDetails.personalRating}`;
-
       } else if (param.isChangeStatistic) {
-        console.log(`isChangeStatistic`);
         this._refreshDetailsControls();
       }
     }
